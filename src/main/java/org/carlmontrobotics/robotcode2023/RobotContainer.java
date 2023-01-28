@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 
 public class RobotContainer {
 
@@ -43,6 +44,11 @@ public class RobotContainer {
     new JoystickButton(driverController, Driver.chargeStationAlignButton).onTrue(new AlignChargingStation(drivetrain));
     new JoystickButton(driverController, Driver.resetFieldOrientationButton).onTrue(new InstantCommand(drivetrain::resetFieldOrientation));
     new JoystickButton(driverController, Driver.toggleFieldOrientedButton).onTrue(new InstantCommand(() -> drivetrain.setFieldOriented(!drivetrain.getFieldOriented())));
+
+    new POVButton(driverController, 0).onTrue(new InstantCommand(drivetrain::forwardCor));
+    new POVButton(driverController, 90).onTrue(new InstantCommand(drivetrain::rightCor));
+    new POVButton(driverController, 180).onTrue(new InstantCommand(drivetrain::leftCor));
+    new POVButton(driverController, 270).onTrue(new InstantCommand(drivetrain::backwardCor));
   }
   private void configureButtonBindingsManipulator() {}
 

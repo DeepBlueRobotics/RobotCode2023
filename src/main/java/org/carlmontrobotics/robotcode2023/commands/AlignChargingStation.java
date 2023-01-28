@@ -4,6 +4,7 @@ import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.*;
 
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 public class AlignChargingStation extends CommandBase {
@@ -11,6 +12,7 @@ public class AlignChargingStation extends CommandBase {
     private final Drivetrain drivetrain;
     private double lastTime = -1;
     private boolean fwd, fieldOriented;
+    private Translation2d cor;
 
     public AlignChargingStation(Drivetrain drivetrain) {
         addRequirements(this.drivetrain = drivetrain);
@@ -21,6 +23,8 @@ public class AlignChargingStation extends CommandBase {
         fwd = Math.abs(getPitch()) > Math.abs(getRoll());
         fieldOriented = drivetrain.getFieldOriented();
         drivetrain.setFieldOriented(false);
+        cor = drivetrain.getCor();
+        drivetrain.setCor(new Translation2d());
     }
 
     @Override
@@ -42,6 +46,7 @@ public class AlignChargingStation extends CommandBase {
     public void end(boolean interrupted) {
         drivetrain.stop();
         drivetrain.setFieldOriented(fieldOriented);
+        drivetrain.setCor(cor);
     }
 
     private double getPitch() {

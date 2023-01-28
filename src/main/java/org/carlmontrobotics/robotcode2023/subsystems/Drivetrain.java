@@ -34,6 +34,8 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
     private static final boolean isGyroReversed = true;
     private static boolean fieldOriented = true;
     private double initTimestamp = 0;
+    private Translation2d cor = new Translation2d();
+
     public final float initPitch;
     public final float initRoll;
 
@@ -110,6 +112,30 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
     public double getRoll() {
         return gyro.getRoll();
+    }
+
+    public Translation2d getCor() {
+        return cor;
+    }
+
+    public void setCor(Translation2d cor) {
+        this.cor = cor;
+    }
+
+    public void forwardCor() {
+        cor = new Translation2d(cor.getX() == wheelBase ? 0 : wheelBase, cor.getY());
+    }
+
+    public void backwardCor() {
+        cor = new Translation2d(cor.getX() == -wheelBase ? 0 : -wheelBase, cor.getY());
+    }
+
+    public void leftCor() {
+        cor = new Translation2d(cor.getX(), cor.getY() == trackWidth ? 0 : trackWidth);
+    }
+
+    public void rightCor() {
+        cor = new Translation2d(cor.getX(), cor.getY() == -trackWidth ? 0 : -trackWidth);
     }
 
     @Override
@@ -236,7 +262,7 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
      *         FR, etc.).
      */
     private SwerveModuleState[] getSwerveStates(double forward, double strafe, double rotation) {
-        return kinematics.toSwerveModuleStates(getChassisSpeeds(forward, -strafe, rotation));
+        return kinematics.toSwerveModuleStates(getChassisSpeeds(forward, -strafe, rotation), cor);
     }
 
     public void toggleMode() {
