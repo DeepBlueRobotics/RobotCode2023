@@ -47,8 +47,8 @@ public class RobotContainer {
 
     new POVButton(driverController, 0).onTrue(new InstantCommand(drivetrain::forwardCor));
     new POVButton(driverController, 90).onTrue(new InstantCommand(drivetrain::rightCor));
-    new POVButton(driverController, 180).onTrue(new InstantCommand(drivetrain::leftCor));
-    new POVButton(driverController, 270).onTrue(new InstantCommand(drivetrain::backwardCor));
+    new POVButton(driverController, 180).onTrue(new InstantCommand(drivetrain::backwardCor));
+    new POVButton(driverController, 270).onTrue(new InstantCommand(drivetrain::leftCor));
   }
   private void configureButtonBindingsManipulator() {}
 

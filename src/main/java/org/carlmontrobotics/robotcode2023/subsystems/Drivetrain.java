@@ -123,19 +123,19 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
     }
 
     public void forwardCor() {
-        cor = new Translation2d(cor.getX() == wheelBase ? 0 : wheelBase, cor.getY());
+        cor = new Translation2d(cor.getX() == wheelBase / 2 ? 0 : wheelBase / 2, cor.getY());
     }
 
     public void backwardCor() {
-        cor = new Translation2d(cor.getX() == -wheelBase ? 0 : -wheelBase, cor.getY());
+        cor = new Translation2d(cor.getX() == -wheelBase / 2 ? 0 : -wheelBase / 2, cor.getY());
     }
 
     public void leftCor() {
-        cor = new Translation2d(cor.getX(), cor.getY() == trackWidth ? 0 : trackWidth);
+        cor = new Translation2d(cor.getX(), cor.getY() == trackWidth / 2 ? 0 : trackWidth / 2);
     }
 
     public void rightCor() {
-        cor = new Translation2d(cor.getX(), cor.getY() == -trackWidth ? 0 : -trackWidth);
+        cor = new Translation2d(cor.getX(), cor.getY() == -trackWidth / 2 ? 0 : -trackWidth / 2);
     }
 
     @Override
