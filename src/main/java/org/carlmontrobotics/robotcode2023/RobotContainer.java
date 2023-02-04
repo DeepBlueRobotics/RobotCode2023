@@ -6,10 +6,6 @@ package org.carlmontrobotics.robotcode2023;
 
 import java.util.HashMap;
 
-import com.pathplanner.lib.PathConstraints;
-import com.pathplanner.lib.PathPlanner;
-import com.pathplanner.lib.PathPlannerTrajectory;
-
 import org.carlmontrobotics.lib199.Limelight;
 import org.carlmontrobotics.lib199.path.PPRobotPath;
 import org.carlmontrobotics.robotcode2023.Constants.OI.Driver;
@@ -18,8 +14,9 @@ import org.carlmontrobotics.robotcode2023.commands.AlignChargingStation;
 import org.carlmontrobotics.robotcode2023.commands.TeleopDrive;
 import org.carlmontrobotics.robotcode2023.commands.UpdateLimelightOdometry;
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
-import org.opencv.video.TrackerGOTURN;
 
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -88,6 +85,20 @@ public class RobotContainer {
   private double getStickValue(Joystick stick, Axis axis) {
     return stick.getRawAxis(axis.value) * (axis == Axis.kLeftY || axis == Axis.kRightY ? -1 : 1);
   }
+
+  public void ledRun() {
+    AddressableLED m_led= new AddressableLED(8);
+
+    AddressableLEDBuffer m_ledBuffer = new AddressableLEDBuffer(81);
+    m_led.setLength(m_ledBuffer.getLength());
+    
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+        m_ledBuffer.setRGB(i,0, 0, 255);
+    }
+    
+    m_led.setData(m_ledBuffer);
+    m_led.start();
+}
 
   /**
    * Processes an input from the joystick into a value between -1 and 1
