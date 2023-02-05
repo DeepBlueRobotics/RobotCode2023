@@ -86,14 +86,14 @@ public class RobotContainer {
     return stick.getRawAxis(axis.value) * (axis == Axis.kLeftY || axis == Axis.kRightY ? -1 : 1);
   }
 
+  AddressableLED m_led= new AddressableLED(8);
   public void ledRun() {
-    AddressableLED m_led= new AddressableLED(8);
 
-    AddressableLEDBuffer m_ledBuffer = new AddressableLEDBuffer(81);
+    AddressableLEDBuffer m_ledBuffer = new AddressableLEDBuffer(82);
     m_led.setLength(m_ledBuffer.getLength());
     
     for (int i = 0; i < m_ledBuffer.getLength(); i++) {
-        m_ledBuffer.setRGB(i,0, 0, 255);
+        m_ledBuffer.setRGB(i,0, 0, 200);
     }
     
     m_led.setData(m_ledBuffer);

@@ -20,13 +20,13 @@ public class Robot extends TimedRobot {
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
     robotContainer = new RobotContainer();
+    robotContainer.ledRun();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     MotorErrors.printSparkMaxErrorMessages();
-    robotContainer.ledRun();
   }
 
   @Override
