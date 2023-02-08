@@ -13,7 +13,7 @@ import com.revrobotics.RelativeEncoder;
 
 public class Arm extends SubsystemBase
 {
-  public CANSparkMax motorL = MotorControllerFactory.createSparkMax(Constants.Arm.portL, TemperatureLimit.NEO);
+  public static CANSparkMax motorL = MotorControllerFactory.createSparkMax(Constants.Arm.portL, TemperatureLimit.NEO);
   public CANSparkMax motorR = MotorControllerFactory.createSparkMax(Constants.Arm.portR, TemperatureLimit.NEO);
   public RelativeEncoder motorLencoder = motorL.getEncoder();
   public RelativeEncoder motorRencoder = motorR.getEncoder();
