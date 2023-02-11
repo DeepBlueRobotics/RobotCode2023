@@ -4,30 +4,49 @@
 
 package org.carlmontrobotics.robotcode2023;
 
+import org.carlmontrobotics.lib199.MotorControllerFactory;
 import org.carlmontrobotics.lib199.MotorErrors;
+import org.carlmontrobotics.lib199.MotorErrors.TemperatureLimit;
 
+import com.playingwithfusion.TimeOfFlight;
+import com.playingwithfusion.TimeOfFlight.RangingMode;
+import com.revrobotics.CANSparkMax;
+
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
 
   private RobotContainer robotContainer;
+  private TimeOfFlight distSensor = new TimeOfFlight(10);
+  CANSparkMax motor = MotorControllerFactory.createSparkMax(6, TemperatureLimit.NEO_550); 
+
 
   @Override
   public void robotInit() {
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
-    robotContainer = new RobotContainer();
-  }
+    //robotContainer = new RobotContainer();
+    distSensor.setRangingMode(RangingMode.Short, 100);
+    SmartDashboard.putNumber("Speed",0);
+    SmartDashboard.putNumber("Current", 20);
 
+  }
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     MotorErrors.printSparkMaxErrorMessages();
+    SmartDashboard.putNumber("dist", Units.metersToInches(distSensor.getRange()/1000));
+    SmartDashboard.putNumber("light", distSensor.getAmbientLightLevel());
+    SmartDashboard.putString("Status", distSensor.getStatus().toString());
+    motor.set(SmartDashboard.getNumber("Speed",0));
+    motor.setSmartCurrentLimit((int)SmartDashboard.getNumber("Current", 20));
   }
-
   @Override
   public void disabledInit() {}
 
