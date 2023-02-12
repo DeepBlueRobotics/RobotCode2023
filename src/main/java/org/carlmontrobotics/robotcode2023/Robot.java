@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     MotorErrors.printSparkMaxErrorMessages();
-    SmartDashboard.putNumber("dist", Units.metersToInches(distSensor.getRange()/1000));
+    SmartDashboard.putNumber("dist", Units.metersToInches((distSensor.getRange() - 16)/1000));
     SmartDashboard.putNumber("light", distSensor.getAmbientLightLevel());
     SmartDashboard.putString("Status", distSensor.getStatus().toString());
     motor.set(SmartDashboard.getNumber("Speed",0));
