@@ -67,51 +67,33 @@ public class DistanceSensor extends SubsystemBase {
     return dist;
   }
 
-  public void correctPosition() {
+  public Pose2d getFinalPose() {
     Constants.Roller.ErrorType errorType = getErrorType();
     Pose2d initialPose = dt.getPose();
     Pose2d finalPose;
     double distanceToMove;
 
-    /* if (errorType == LEFT) {
-      distanceToMove = (Constants.Roller.acceptableLeftLimit) - dist + 2; // added 2 to make sure that the new position is fine
-      finalPose = new Pose2d(initialPose.getX() - Units.inchesToMeters(distanceToMove), initialPose.getY(), initialPose.getRotation());
-      CommandScheduler.getInstance().schedule(new DriveToPoint(finalPose, dt));
-    }
-    else if (errorType == RIGHT) {
-      distanceToMove = dist - (Constants.Roller.acceptableRightLimit) + 2; // added 2 to make sure that the new position is fine
-      finalPose = new Pose2d(initialPose.getX() + Units.inchesToMeters(distanceToMove), initialPose.getY(), initialPose.getRotation());
-      CommandScheduler.getInstance().schedule(new DriveToPoint(finalPose, dt));
-    }
-    else if (errorType == MIDDLE) {
-      // do nothing
-    } */
-
     switch (errorType) {
-      case LEFT:
+      case LEFT: // we must move right
         distanceToMove = (Constants.Roller.acceptableLeftLimit) - dist + 2; // added 2 to make sure that the new position is fine
-        /* finalPose = new Pose2d(initialPose.getX() + Units.inchesToMeters(distanceToMove), initialPose.getY(), initialPose.getRotation());
-        CommandScheduler.getInstance().schedule(new DriveToPoint(finalPose, dt));
-        */
 
         Translation2d translation = new Translation2d(distanceToMove, initialPose.getRotation().plus(new Rotation2d(Math.PI/2)));
         Transform2d transform = new Transform2d(translation, new Rotation2d(0));
         finalPose = initialPose.plus(transform);
-        CommandScheduler.getInstance().schedule(new DriveToPoint(finalPose, dt));
-      case RIGHT:
-        distanceToMove = dist - (Constants.Roller.acceptableRightLimit) + 2; // added 2 to make sure that the new position is fine
-        /*finalPose = new Pose2d(initialPose.getX() - Units.inchesToMeters(distanceToMove), initialPose.getY(), initialPose.getRotation());
-        CommandScheduler.getInstance().schedule(new DriveToPoint(finalPose, dt));*/
+        return finalPose;
+        
+      case RIGHT: // we must move left
+        distanceToMove = dist - (Constants.Roller.acceptableRightLimit) + 2;
 
         Translation2d translation2 = new Translation2d(distanceToMove, initialPose.getRotation().plus(new Rotation2d(-Math.PI/2)));
         Transform2d transform2 = new Transform2d(translation2, new Rotation2d(0));
         finalPose = initialPose.plus(transform2);
-        CommandScheduler.getInstance().schedule(new DriveToPoint(finalPose, dt));
+        return finalPose;
       case MIDDLE:
         // do nothing
-
     }
+    return initialPose;
 
-    // these are only temporary because the movements should be relavitve to the robot's orientation, not any particular axis.
+    // There might be errors in the logic (especially with the angles).
   }
 }

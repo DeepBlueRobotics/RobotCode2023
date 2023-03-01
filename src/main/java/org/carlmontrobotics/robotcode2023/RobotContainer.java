@@ -11,8 +11,10 @@ import org.carlmontrobotics.lib199.path.PPRobotPath;
 import org.carlmontrobotics.robotcode2023.Constants.OI.Driver;
 import org.carlmontrobotics.robotcode2023.Constants.OI.Manipulator;
 import org.carlmontrobotics.robotcode2023.commands.AlignChargingStation;
+import org.carlmontrobotics.robotcode2023.commands.DriveToPoint;
 import org.carlmontrobotics.robotcode2023.commands.RotateToFieldRelativeAngle;
 import org.carlmontrobotics.robotcode2023.commands.TeleopDrive;
+import org.carlmontrobotics.robotcode2023.subsystems.DistanceSensor;
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -34,6 +36,7 @@ public class RobotContainer {
 
   public final Limelight lime = new Limelight();
   public final Drivetrain drivetrain = new Drivetrain(lime);
+  public final DistanceSensor distSensor = new DistanceSensor();
 
   public final PPRobotPath[] autoPaths;
   public final DigitalInput[] autoSelectors;
@@ -65,6 +68,7 @@ public class RobotContainer {
     new JoystickButton(driverController, Driver.chargeStationAlignButton).onTrue(new AlignChargingStation(drivetrain));
     new JoystickButton(driverController, Driver.resetFieldOrientationButton).onTrue(new InstantCommand(drivetrain::resetFieldOrientation));
     new JoystickButton(driverController, Driver.toggleFieldOrientedButton).onTrue(new InstantCommand(() -> drivetrain.setFieldOriented(!drivetrain.getFieldOriented())));
+    new JoystickButton(driverController, Driver.correctPositionButton).onTrue(new DriveToPoint(distSensor.getFinalPose(), drivetrain));
     new POVButton(driverController, 0).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(0), drivetrain));
     new POVButton(driverController, 90).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(90), drivetrain));
     new POVButton(driverController, 180).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(180), drivetrain));
