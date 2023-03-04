@@ -5,15 +5,12 @@
 package org.carlmontrobotics.robotcode2023;
 
 import org.carlmontrobotics.robotcode2023.subsystems.Arm;
-import org.carlmontrobotics.robotcode2023.subsystems.Arm.ArmPreset;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class RobotContainer {
 
@@ -29,8 +26,6 @@ public class RobotContainer {
 
   private void configureButtonBindingsDriver() {}
   private void configureButtonBindingsManipulator() {
-    new JoystickButton(manipulatorController, Constants.OI.Manipulator.cycleUp).onTrue(new InstantCommand(()->arm.cycleUp()));
-    new JoystickButton(manipulatorController, Constants.OI.Manipulator.cycleDown).onTrue(new InstantCommand(()->arm.cycleDown()));
     
   }
 
