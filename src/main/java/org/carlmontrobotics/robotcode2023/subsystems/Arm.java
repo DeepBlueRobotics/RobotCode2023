@@ -105,33 +105,4 @@ public class Arm extends SubsystemBase {
   public void setPreset(ArmPreset preset) {
    // SmartDashboard.putNumber("GoalPosition", preset.value);
   }
-    
-  //Snaps raw encoder pos to one of our cycle positions
-  public ArmPreset snappedArmPos() {
-    double encoderPos = encoder.getZeroOffset();
-
-    for(ArmPreset check : ArmPreset.values()) {
-      double lowdist = (check.value - check.prev().value) / 2;
-      double hidist = (check.next().value - check.value) / 2; // get the halfway points between each position and it's neighbors
-      if (check.value - lowdist < encoderPos && encoderPos < check.value + hidist) {
-        //seperate high and low instead of ABS because maybe difference isn't constant between each position of arm
-        //and yes it still works for lowest and highest value
-        return check;
-      }
-    }
-    //help something went REALLY wrong
-    return null;
-  }
-
-  public ArmPreset closeSnappedArmPos() {//more precise snapping
-    double encoderPos = encoder.getZeroOffset();
-
-    for(ArmPreset check : ArmPreset.values()) {
-        if (Math.abs(check.value - encoderPos) > encoderErrorTolerance) {//maybe will break if cone/cube values are close, but if they are close then lower error or only use one enum
-        return check;
-        }
-    }
-    //nothing close enough
-    return null;
-  }
 }

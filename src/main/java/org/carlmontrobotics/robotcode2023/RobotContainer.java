@@ -29,7 +29,11 @@ public class RobotContainer {
 
   private void configureButtonBindingsDriver() {}
   private void configureButtonBindingsManipulator() {
+      new JoystickButton(manipulatorController, Constants.OI.Controller.Y).whenPressed(() -> { new InstantCommand(() -> {arm.goalEnum = Arm.ArmPreset.HIGH;});});
+      new JoystickButton(manipulatorController, Constants.OI.Controller.B).whenPressed(() -> { new InstantCommand(() -> {arm.goalEnum = Arm.ArmPreset.MID;});});
+      new JoystickButton(manipulatorController, Constants.OI.Controller.A).whenPressed(() -> { new InstantCommand(() -> {arm.goalEnum = Arm.ArmPreset.INTAKE;});});
   }
+    
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
