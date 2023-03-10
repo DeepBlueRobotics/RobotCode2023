@@ -24,9 +24,9 @@ public class Arm extends SubsystemBase {
   //actual arm
 //  private CANSparkMax motor = MotorControllerFactory.createSparkMax(Constants.Arm.port, TemperatureLimit.NEO);
 //  private SparkMaxAbsoluteEncoder encoder = motor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-  private double gearRatio = 225;
+  private double gearRatio = 47.25;
   
-  public CANSparkMax motor = MotorControllerFactory.createSparkMax(Constants.Arm.port, TemperatureLimit.NEO);
+  public CANSparkMax motor = MotorControllerFactory.createSparkMax(19, TemperatureLimit.NEO_550);
   public SparkMaxAbsoluteEncoder encoder = motor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
   public double encoderErrorTolerance = .05;
 
@@ -71,15 +71,15 @@ public class Arm extends SubsystemBase {
     
     //SmartDashboard.putNumber("GoalPosition", goalPos);
 
-    SmartDashboard.putNumber("Motor Voltage", 0);
+    SmartDashboard.putNumber("Motor asdf", 0);
     encoder.setPositionConversionFactor(1 / gearRatio * 2 * Math.PI);
     motor.setIdleMode(IdleMode.kBrake);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Encoder Pos", encoder.getPosition());
-    double speed = SmartDashboard.getNumber("Motor Voltage", 0);
+    SmartDashboard.putNumber("Encoder asdf", encoder.getPosition());
+    double speed = SmartDashboard.getNumber("Motor asdf", 0);
     motor.set(speed);
     /*
     pid.setP(kP);
