@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -48,14 +49,13 @@ public class Arm extends SubsystemBase {
   private double[] kI = {0,        0};
   private double[] kD = {0,        0}; 
   
-  private double[] posTolerance = {.05, .05};
-  private double[] velTolerance = {1,   1};
+  private double[] posTolerance = {Units.degreesToRadians(1), Units.degreesToRadians(1)};
+  private double[] velTolerance = {Units.degreesToRadians(1),   Units.degreesToRadians(1)};
   
   private PIDController armpid = new PIDController(kP[0], kI[0], kD[0]);
   private PIDController wristpid = new PIDController(kP[1], kI[1], kD[1]);
 
   private double[] goalPos = {-Math.PI / 2, 0};
-  private double[] offset = {-0.844154, 0};
   
   // needed to calculate feedforward values dynamically
   private final double ARM_MASS = 6.57;
@@ -78,7 +78,7 @@ public class Arm extends SubsystemBase {
     armpid.setTolerance(posTolerance[0], velTolerance[0]);
     wristpid.setTolerance(posTolerance[1], velTolerance[1]);
     wristEncoder.setZeroOffset(2.08);
-    wristpid.enableContinuousInput(0, 2*Math.PI);
+    wristpid.reset();
     armEncoder.setZeroOffset(4.02);
     SmartDashboard.putNumber("WristGoalPos", 0);
     SmartDashboard.putNumber("kP: Wis",      kP[1]           );
@@ -91,10 +91,10 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     armKG = calculateKG();
-    // SmartDashboard.putNumber("Motor Voltage", wristFeed.calculate(getRobotWristAngle(), 0, 0)
-    // + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
-    // wristMotor.setVoltage(wristFeed.calculate(getRobotWristAngle(), 0, 0)
-    //     + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
+    SmartDashboard.putNumber("Motor Voltage", wristFeed.calculate(getRobotWristAngle(), 0, 0)
+    + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
+    wristMotor.setVoltage(wristFeed.calculate(getRobotWristAngle(), 0, 0)
+        + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
     //Rotation2d currentAngle = getCoM().getAngle();
     //armMotor.setVoltage(armFeed.calculate(currentAngle.getRadians(), 0, 0)
     //+ armpid.calculate(currentPos[0], goalPos[0]) + armKG * currentAngle.getCos());
@@ -132,7 +132,7 @@ public class Arm extends SubsystemBase {
   } 
   
   public double getRobotWristAngle() {
-    return MathUtil.inputModulus((getArmPos() + Math.PI / 2) + getWristPos(), 0, (2 * Math.PI));
+    return MathUtil.inputModulus((getArmPos() + Math.PI / 2) + getWristPos(), -Math.PI, Math.PI);
   }
 
   // distance from center of mass relative to joint holding arm

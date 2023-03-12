@@ -16,6 +16,8 @@ public class SetRoller extends CommandBase {
     private final Color ledColor;
     private final Timer timer = new Timer();
 
+    // timer = 0.75s when intaking cube
+    // timer = 1.5s when intaking cone
     public SetRoller(Roller roller, DoubleSupplier speed, Color ledColor) {
         addRequirements(this.roller = roller);
         this.speed = speed;
@@ -41,11 +43,10 @@ public class SetRoller extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        double time = 0;
+        double time = timer.get();
 
         if (roller.hasGamePiece()) {
             timer.start();
-            time = timer.get();
         }
         SmartDashboard.putNumber("Time Target", roller.getTime());
 
