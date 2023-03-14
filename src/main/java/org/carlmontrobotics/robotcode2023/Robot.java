@@ -5,6 +5,9 @@
 package org.carlmontrobotics.robotcode2023;
 
 import org.carlmontrobotics.lib199.MotorErrors;
+import org.carlmontrobotics.lib199.sim.MockedSparkEncoder;
+
+import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,7 +22,16 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
+    if(!DriverStation.isFMSAttached()) PathPlannerServer.startServer(5811);
     robotContainer = new RobotContainer();
+  }
+
+  @Override
+  public void simulationInit() {
+    MockedSparkEncoder.setGearing(Constants.Drivetrain.driveFrontLeftPort, Constants.Drivetrain.driveGearing);
+    MockedSparkEncoder.setGearing(Constants.Drivetrain.driveFrontLeftPort, Constants.Drivetrain.driveGearing);
+    MockedSparkEncoder.setGearing(Constants.Drivetrain.driveFrontLeftPort, Constants.Drivetrain.driveGearing);
+    MockedSparkEncoder.setGearing(Constants.Drivetrain.driveFrontLeftPort, Constants.Drivetrain.driveGearing);
   }
 
   @Override
@@ -29,7 +41,18 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    new Thread(() -> {
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        return;
+      }
+
+      robotContainer.drivetrain.coast();
+    }).start();
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -39,6 +62,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    robotContainer.drivetrain.brake();
     robotContainer.getAutonomousCommand().schedule();
   }
 
@@ -51,6 +75,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     CommandScheduler.getInstance().cancelAll();
+    robotContainer.drivetrain.brake();
   }
 
   @Override
@@ -62,6 +87,7 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+    robotContainer.drivetrain.brake();
   }
 
   @Override
