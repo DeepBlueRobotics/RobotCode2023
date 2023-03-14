@@ -4,11 +4,18 @@
 
 package org.carlmontrobotics.robotcode2023;
 
+import org.carlmontrobotics.robotcode2023.Constants.OI.Driver;
+import org.carlmontrobotics.robotcode2023.commands.IntakeRoller;
+import org.carlmontrobotics.robotcode2023.commands.OuttakeRoller;
+import org.carlmontrobotics.robotcode2023.subsystems.Roller;
+import org.carlmontrobotics.robotcode2023.subsystems.Roller.RollerMode;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class RobotContainer {
 
@@ -16,21 +23,34 @@ public class RobotContainer {
   public final Joystick manipulatorController = new Joystick(1);
   public final PowerDistribution pd = new PowerDistribution();
 
+  public final Roller roller = new Roller();
+
   public RobotContainer() {
     configureButtonBindingsDriver();
     configureButtonBindingsManipulator();
   }
 
-  private void configureButtonBindingsDriver() {}
+  private void configureButtonBindingsDriver() {
+    new JoystickButton(driverController, Driver.rollerIntakeConeButton)
+      .onTrue(new IntakeRoller(roller, RollerMode.INTAKE_CONE, Constants.Roller.conePickupColor));
+    new JoystickButton(driverController, Driver.rollerIntakeCubeButton)
+      .onTrue(new IntakeRoller(roller, RollerMode.INTAKE_CUBE, Constants.Roller.cubePickupColor));
+    new JoystickButton(driverController, Driver.rollerOuttakeConeButton)
+      .onFalse(new OuttakeRoller(roller, RollerMode.OUTTAKE_CONE, Constants.Roller.conePickupColor));
+    new JoystickButton(driverController, Driver.rollerOuttakeCubeButton)
+      .onFalse(new OuttakeRoller(roller, RollerMode.OUTTAKE_CUBE, Constants.Roller.cubePickupColor));
+    new JoystickButton(driverController, Driver.rollerStopButton).onTrue(new InstantCommand(() -> roller.setSpeed(0)));
+  }
   private void configureButtonBindingsManipulator() {}
 
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }
 
-  private double getStickValue(Joystick stick, XboxController.Axis axis) {
+  /*private double getStickValue(Joystick stick, XboxController.Axis axis) {
     return stick.getRawAxis(axis.value) * (axis == XboxController.Axis.kLeftY || axis == XboxController.Axis.kRightY ? -1 : 1);
   }
+  */
 
   /**
    * Processes an input from the joystick into a value between -1 and 1
@@ -38,7 +58,7 @@ public class RobotContainer {
    * @param value The value to be processed.
    * @return The processed value.
    */
-  private double inputProcessing(double value) {
+  /*private double inputProcessing(double value) {
     double processedInput;
     // processedInput =
     // (((1-Math.cos(value*Math.PI))/2)*((1-Math.cos(value*Math.PI))/2))*(value/Math.abs(value));
@@ -46,5 +66,5 @@ public class RobotContainer {
         value);
     return processedInput;
   }
-
+  */
 }
