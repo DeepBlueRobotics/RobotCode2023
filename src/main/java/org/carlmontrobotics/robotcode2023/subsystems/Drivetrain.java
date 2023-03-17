@@ -5,9 +5,9 @@ import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.*;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
+import org.carlmontrobotics.MotorConfig;
 import org.carlmontrobotics.lib199.Limelight;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
-import org.carlmontrobotics.lib199.MotorErrors.TemperatureLimit;
 import org.carlmontrobotics.lib199.path.SwerveDriveInterface;
 import org.carlmontrobotics.lib199.swerve.SwerveModule;
 
@@ -21,8 +21,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.SerialPort;
@@ -42,9 +40,6 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
     public final float initPitch;
     public final float initRoll;
-
-    private double prevAngle = 0;
-    private double prevTime = 0;
 
     public Drivetrain(Limelight lime) {
         this.lime = lime;
@@ -95,33 +90,32 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
             // Supplier<Float> rollSupplier = () -> gyro.getRoll();
 
             SwerveModule moduleFL = new SwerveModule(swerveConfig, SwerveModule.ModuleType.FL,
-                    MotorControllerFactory.createSparkMax(driveFrontLeftPort, TemperatureLimit.NEO),
-                    MotorControllerFactory.createSparkMax(turnFrontLeftPort, TemperatureLimit.NEO),
+                    MotorControllerFactory.createSparkMax(driveFrontLeftPort, MotorConfig.NEO),
+                    MotorControllerFactory.createSparkMax(turnFrontLeftPort, MotorConfig.NEO),
                     MotorControllerFactory.createCANCoder(canCoderPortFL), 0,
                     pitchSupplier, rollSupplier);
             // Forward-Right
             SwerveModule moduleFR = new SwerveModule(swerveConfig, SwerveModule.ModuleType.FR,
-                    MotorControllerFactory.createSparkMax(driveFrontRightPort, TemperatureLimit.NEO),
-                    MotorControllerFactory.createSparkMax(turnFrontRightPort, TemperatureLimit.NEO),
+                    MotorControllerFactory.createSparkMax(driveFrontRightPort, MotorConfig.NEO),
+                    MotorControllerFactory.createSparkMax(turnFrontRightPort, MotorConfig.NEO),
                     MotorControllerFactory.createCANCoder(canCoderPortFR), 1,
                     pitchSupplier, rollSupplier);
             // Backward-Left
             SwerveModule moduleBL = new SwerveModule(swerveConfig, SwerveModule.ModuleType.BL,
-                    MotorControllerFactory.createSparkMax(driveBackLeftPort, TemperatureLimit.NEO),
-                    MotorControllerFactory.createSparkMax(turnBackLeftPort, TemperatureLimit.NEO),
+                    MotorControllerFactory.createSparkMax(driveBackLeftPort, MotorConfig.NEO),
+                    MotorControllerFactory.createSparkMax(turnBackLeftPort, MotorConfig.NEO),
                     MotorControllerFactory.createCANCoder(canCoderPortBL), 2,
                     pitchSupplier, rollSupplier);
             // Backward-Right
             SwerveModule moduleBR = new SwerveModule(swerveConfig, SwerveModule.ModuleType.BR,
-                    MotorControllerFactory.createSparkMax(driveBackRightPort, TemperatureLimit.NEO),
-                    MotorControllerFactory.createSparkMax(turnBackRightPort, TemperatureLimit.NEO),
+                    MotorControllerFactory.createSparkMax(driveBackRightPort, MotorConfig.NEO),
+                    MotorControllerFactory.createSparkMax(turnBackRightPort, MotorConfig.NEO),
                     MotorControllerFactory.createCANCoder(canCoderPortBR), 3,
                     pitchSupplier, rollSupplier);
             modules = new SwerveModule[] { moduleFL, moduleFR, moduleBL, moduleBR };
         }
         SmartDashboard.putNumber("kpTheta", thetaPIDController[0]);
         odometry = new SwerveDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(getHeading()), getModulePositions(), new Pose2d());
-        prevTime = Timer.getFPGATimestamp();
     }
 
     @Override
@@ -133,7 +127,9 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
         // Update the odometry with limelight
         if(lime != null && lime.hasTarget()) {
-            odometry.addVisionMeasurement(lime.getTransform(Limelight.Transform.BOTPOSE).toPose2d(), WPIUtilJNI.now() * 1.0e-6 /* From the odometry.update implementation */);
+            odometry.addVisionMeasurement(
+                lime.getTransform(limelightTransformForPoseEstimation).toPose2d(),
+                Timer.getFPGATimestamp() - lime.getNTEntry(limelightTransformForPoseEstimation.name().toLowerCase()).getDoubleArray(new double[7])[6] / 1000);
         }
 
         // SmartDashboard.putNumber("Odometry X",
@@ -149,16 +145,6 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         // SmartDashboard.putNumber("Compass Offset", compassOffset);
         // SmartDashboard.putBoolean("Current Magnetic Field Disturbance",
         // gyro.isMagneticDisturbance());
-
-        // drive to point testing
-
-        // PID testing for rotations
-        thetaPIDController[0] = SmartDashboard.getNumber("kpTheta", thetaPIDController[0]);
-        double temp = gyro.getAngle();
-        double tempTime = Timer.getFPGATimestamp();
-        SmartDashboard.putNumber("Angular Vel", Units.degreesToRadians(temp - prevAngle) / (tempTime - prevTime));
-        prevAngle = temp;
-        prevTime = tempTime;
     }
 
     @Override
@@ -248,6 +234,7 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
     //#region Getters and Setters
 
+    // I this returns a value from -180 to 180
     public double getHeading() {
         double x = gyro.getAngle();
         if (fieldOriented) x -= fieldOffset;
