@@ -39,9 +39,11 @@ public class RobotContainer {
   public final DigitalInput[] autoSelectors;
 
   public RobotContainer() {
+    HashMap<String, Command> cerealTestEvents = new HashMap<>();
+    cerealTestEvents.put("testevent", new PrintCommand("wowee!"));
 
     autoPaths = new PPRobotPath[] {
-      null,
+      new PPRobotPath("cereal test", drivetrain, false, cerealTestEvents),
       new PPRobotPath("New Path", drivetrain, false, new HashMap<>()),
       new PPRobotPath("3 game piece", drivetrain, false, new HashMap<>())
     };
