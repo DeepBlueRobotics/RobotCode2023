@@ -4,6 +4,7 @@
 
 package org.carlmontrobotics.robotcode2023;
 
+import java.awt.Color;
 import java.util.HashMap;
 
 import org.carlmontrobotics.lib199.Limelight;
@@ -44,7 +45,7 @@ public class RobotContainer {
 
   public RobotContainer() {
     HashMap<String, Command> cerealTestEvents = new HashMap<>();
-    cerealTestEvents.put("testevent", new PrintCommand("wowee!"));
+    cerealTestEvents.put("colorchange", new InstantCommand(() -> roller.setLedColor(Color.ORANGE)));
 
     autoPaths = new PPRobotPath[] {
       new PPRobotPath("cereal test", drivetrain, false, cerealTestEvents),
@@ -90,6 +91,10 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
+    if (true) {
+      return autoPaths[0].getPathCommand(false, true);
+    }
+
     // PPRobotPath autoPath = new PPRobotPath("New Path", drivetrain, false, new HashMap<>());
     PPRobotPath autoPath = null;
     for(int i = 0; i < autoSelectors.length; i++) {
