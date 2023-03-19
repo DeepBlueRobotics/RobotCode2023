@@ -245,61 +245,61 @@ public final class Constants {
         public static GoalPos[][] LOW = {
             { // front
                 new GoalPos(Units.degreesToRadians(-44.46), Units.degreesToRadians(117.17)), // cube
-                new GoalPos(Units.degreesToRadians(0), Units.degreesToRadians(-100.78))             // cone
+                new GoalPos(Units.degreesToRadians(0), Units.degreesToRadians(-100.78))      // cone
             },
             { // back
-                new GoalPos(Units.degreesToRadians(-80.2), Units.degreesToRadians(61.37)), 
+                new GoalPos(Units.degreesToRadians(-80.2), Units.degreesToRadians(61.37)),
                 new GoalPos(Units.degreesToRadians(-90), Units.degreesToRadians(133.24))
             }
         };
         public static GoalPos[][] MID = {
             {
-                new GoalPos(Units.degreesToRadians(-85.98), Units.degreesToRadians(132.01)), 
-                new GoalPos(Units.degreesToRadians(-106.85), Units.degreesToRadians(65.47)) 
+                new GoalPos(Units.degreesToRadians(-85.98), Units.degreesToRadians(132.01)),
+                new GoalPos(Units.degreesToRadians(-106.85), Units.degreesToRadians(65.47))
             },
             {
-                new GoalPos(Units.degreesToRadians(15.24), Units.degreesToRadians(-109.64)), 
-                new GoalPos(Units.degreesToRadians(-47.63), Units.degreesToRadians(141.7)) 
+                new GoalPos(Units.degreesToRadians(15.24), Units.degreesToRadians(-109.64)),
+                new GoalPos(Units.degreesToRadians(-47.63), Units.degreesToRadians(141.7))
             }
         };
         public static GoalPos[][] HIGH = {
             {
-                new GoalPos(Units.degreesToRadians(-102.02), Units.degreesToRadians(-149.079)), 
-                new GoalPos(Units.degreesToRadians(-104.18), Units.degreesToRadians(54.24)) 
+                new GoalPos(Units.degreesToRadians(-102.02), Units.degreesToRadians(-149.079)),
+                new GoalPos(Units.degreesToRadians(-104.18), Units.degreesToRadians(54.24))
             },
             {
-                new GoalPos(Units.degreesToRadians(20.76), Units.degreesToRadians(-52.06)), 
-                new GoalPos(Units.degreesToRadians(-14.07), Units.degreesToRadians(58.12)) 
+                new GoalPos(Units.degreesToRadians(20.76), Units.degreesToRadians(-52.06)),
+                new GoalPos(Units.degreesToRadians(-14.07), Units.degreesToRadians(58.12))
             }
         };
         // TODO: Get positions for STORED, SHELF, and SUBSTATION
         public static GoalPos[][] STORED = {
             {
-                new GoalPos(Units.degreesToRadians(-90), 0), 
+                new GoalPos(Units.degreesToRadians(-90), 0),
                 new GoalPos(40, -1.8861790155)
             },
             {
-                new GoalPos(Units.degreesToRadians(-90), 0), 
+                new GoalPos(Units.degreesToRadians(-90), 0),
                 new GoalPos(40, -1.8861790155)
             }
         };
         public static GoalPos[][] SHELF = {
             {
-                new GoalPos(Units.degreesToRadians(-90), 0), 
+                new GoalPos(Units.degreesToRadians(-90), 0),
                 new GoalPos(0, 0)
             },
             {
-                new GoalPos(Units.degreesToRadians(-90), 0), 
+                new GoalPos(Units.degreesToRadians(-90), 0),
                 new GoalPos(0, 0)
             }
         };
         public static GoalPos[][] SUBSTATION = {
             {
-                new GoalPos(Units.degreesToRadians(-90), 0), 
+                new GoalPos(Units.degreesToRadians(-90), 0),
                 new GoalPos(0, 0)
             },
             {
-                new GoalPos(Units.degreesToRadians(-90), 0), 
+                new GoalPos(Units.degreesToRadians(-90), 0),
                 new GoalPos(0, 0)
             }
         };
@@ -375,6 +375,7 @@ public final class Constants {
     public static final class OI {
 
         public static final double JOY_THRESH = 0.01;
+        public static final double MIN_AXIS_TRIGGER_VALUE = 0.25;
 
         public static final class Driver {
             public static final int port = 0;
@@ -395,17 +396,19 @@ public final class Constants {
 
             public static final int toggleCubeButton = Button.kLeftBumper.value;
             public static final int toggleFrontButton = Button.kRightBumper.value;
-            public static final int storeButton = Button.kA.value;
-            public static final int lowButton = Button.kX.value;
-            public static final int midButton = Button.kY.value;
-            public static final int highButton = Button.kB.value;
-            // TODO: Determine real ports for the following buttons. I couldn't find what buttons referred to the "4-pad"
-            public static final int shelfButton = -1;
-            public static final int intakeButton = -1;
-            public static final int substationButton = -1;
 
-            public static final int rollerIntakeCubeButton = Axis.kRightTrigger.value;
-            public static final int rollerIntakeConeButton = Axis.kLeftTrigger.value;
+            public static final int storePosButton = Button.kA.value;
+            public static final int lowPosButton = Button.kX.value;
+            public static final int midPosButton = Button.kY.value;
+            public static final int highPosButton = Button.kB.value;
+
+            public static final int shelfPickupPOV = 0;
+            public static final int intakeConePOV = 90;
+            public static final int substationPickupPOV = 180;
+            public static final int intakeCubePOV = 270;
+
+            public static final Axis rollerIntakeCubeButton = Axis.kRightTrigger;
+            public static final Axis rollerIntakeConeButton = Axis.kLeftTrigger;
         }
     }
 }

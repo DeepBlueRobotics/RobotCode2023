@@ -39,13 +39,10 @@ public class Arm extends SubsystemBase {
     private final SimpleMotorFeedforward armFeed = new SimpleMotorFeedforward(kS[ARM], kV[ARM], kA[ARM]);
     private ArmFeedforward wristFeed = new ArmFeedforward(kS[WRIST], kG[WRIST], kV[WRIST], kA[WRIST]);
 
-    public PIDController armPID = new PIDController(kP[ARM], kI[ARM], kD[ARM]);
-    public PIDController wristPID = new PIDController(kP[WRIST], kI[WRIST], kD[WRIST]);
+    private PIDController armPID = new PIDController(kP[ARM], kI[ARM], kD[ARM]);
+    private PIDController wristPID = new PIDController(kP[WRIST], kI[WRIST], kD[WRIST]);
 
     private SendableBuilder senb;
-
-    public int object = CUBE;
-    public int side = BACK;
 
     public Arm() {
         armMotor.setInverted(inverted[ARM]);
@@ -162,6 +159,14 @@ public class Arm extends SubsystemBase {
         return wristEncoder.getVelocity();
     }
 
+    public boolean armAtSetpoint() {
+        return armPID.atSetpoint();
+    }
+
+    public boolean wristAtSetpoint() {
+        return wristPID.atSetpoint();
+    }
+
     // Unbounded wrist position relative to ground
     public double getWristPosRelativeToGround() {
         return getArmPos() + wristEncoder.getPosition();
@@ -173,14 +178,6 @@ public class Arm extends SubsystemBase {
 
     public void setWristTarget(double targetPos) {
         goalPosRad[WRIST] = getWristClampedGoal(targetPos);
-    }
-
-    public double getArmGoal(GoalPos[][] pos) {
-        return pos[side][object].armPos;
-    }
-
-    public double getWristGoal(GoalPos[][] pos) {
-        return pos[side][object].wristPos;
     }
 
     // returns true if the conditions are *not* safe for the roller to make a 360 degree turn.

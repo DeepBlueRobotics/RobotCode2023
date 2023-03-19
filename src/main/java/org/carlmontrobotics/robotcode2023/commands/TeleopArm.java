@@ -68,7 +68,7 @@ public class TeleopArm extends CommandBase {
       rawWristVel = 0.0;
     else
       rawWristVel = MAX_FF_VEL[WRIST] * wrist.getAsDouble();
-    
+
     return new double[] {rawArmVel, rawWristVel};
   }
 
