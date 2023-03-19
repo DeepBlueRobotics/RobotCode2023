@@ -34,8 +34,9 @@ public class RobotContainer {
   public final Joystick manipulatorController = new Joystick(Manipulator.port);
   public final PowerDistribution pd = new PowerDistribution();
 
-  public final Limelight lime = new Limelight();
-  public final Drivetrain drivetrain = new Drivetrain(lime);
+  public final Limelight intakeLime = new Limelight("intake-limelight");
+  public final Limelight outtakeLime = new Limelight("outtake-limelight");
+  public final Drivetrain drivetrain = new Drivetrain(outtakeLime);
   public final Roller roller = new Roller();
 
   public final PPRobotPath[] autoPaths;
