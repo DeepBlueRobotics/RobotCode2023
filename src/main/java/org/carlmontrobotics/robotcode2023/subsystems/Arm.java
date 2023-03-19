@@ -46,7 +46,7 @@ public class Arm extends SubsystemBase {
   //PID
   //FIXME BOTH WRIST AND ARM NEED PID DONE
   // Arm, Wrist for each "column"
-  private double[] kP = {4.2736,        0};
+  private double[] kP = {4.2736,        4.7391};
   private double[] kI = {0,        0};
   private double[] kD = {0,        0}; 
   
@@ -81,7 +81,7 @@ public class Arm extends SubsystemBase {
     armpid.setTolerance(posTolerance[0], velTolerance[0]);
     wristpid.setTolerance(posTolerance[1], velTolerance[1]);
     wristEncoder.setZeroOffset(3.50 + Math.PI / 2);
-    wristpid.enableContinuousInput(0, 2*Math.PI);
+    //wristpid.enableContinuousInput(0, 2*Math.PI);
     armpid.enableContinuousInput(0, 2*Math.PI);
     armEncoder.setZeroOffset(4.02);
     armMotor.setInverted(true);
@@ -101,8 +101,8 @@ public class Arm extends SubsystemBase {
     armKG = calculateKG();
     // SmartDashboard.putNumber("Motor Voltage", wristFeed.calculate(getRobotWristAngle(), 0, 0)
     // + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
-    // wristMotor.setVoltage(wristFeed.calculate(getRobotWristAngle(), 0, 0)
-    //     + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
+     wristMotor.setVoltage(wristFeed.calculate(getRobotWristAngle(), 0, 0)
+         + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
     goalPos[1] = Units.degreesToRadians(SmartDashboard.getNumber("WristGoalDeg", Units.radiansToDegrees(goalPos[1])));
     goalPos[0] = Units.degreesToRadians(SmartDashboard.getNumber("ArmGoalDeg", Units.radiansToDegrees(goalPos[0])));
     Rotation2d currentAngle = new Rotation2d(getArmPos());
