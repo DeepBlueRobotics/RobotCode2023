@@ -92,7 +92,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     if (true) {
-      return autoPaths[0].getPathCommand(false, true);
+      return autoPaths[0].getPathCommand(true, true);
     }
 
     // PPRobotPath autoPath = new PPRobotPath("New Path", drivetrain, false, new HashMap<>());
