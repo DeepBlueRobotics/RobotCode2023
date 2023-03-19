@@ -4,44 +4,54 @@
 
 package org.carlmontrobotics.robotcode2023.commands;
 
+import org.carlmontrobotics.robotcode2023.Constants;
+import org.carlmontrobotics.robotcode2023.subsystems.Arm;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-import org.carlmontrobotics.robotcode2023.subsystems.Arm;
-
 public class Stow extends CommandBase {
   
+   private final double wristStow = Constants.Arm.wristStowPos;
+    
+   private final double wristStowPosB = Units.degreesToRadians(-wristStow);
+   private final double wristStowPosF = Units.degreesToRadians(wristStow);
+   private final double armStow = Units.degreesToRadians(Constants.Arm.ARM_STOW_ANGLE);
+
+   Arm arm = new Arm();
   
 
   /** Creates a new Stow. */
   
-  public Stow(Arm aram) {
+  public Stow(Arm arm) {
     // Use addRequirements() here to declare subsystem dependencies.
-    
-   final double wristStowPosB = Units.degreesToRadians(-180);
-   final double wristStowPosF = Units.degreesToRadians(180);
-  
-    if(aram.isInside(true))
-    {
-      if( aram.getWristPos() < Units.degreesToRadians(-90))
-      {
-        aram.setWristTarget(wristStowPosB);
-        
-      }
-      else if (aram.getWristPos() > Units.degreesToRadians(-90))
-      {
-        aram.setWristTarget(wristStowPosF);
-      }
-    }
-    
-    
-    
+    addRequirements(this.arm = arm);  
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    
+    if (arm.isInside()) {
+      if ( arm.getWristPos() < Units.degreesToRadians(-90)) {
+        arm.setArmTarget(-Math.PI + armStow);
+        
+      }
+      else if (arm.getWristPos() > Units.degreesToRadians(-90)) {
+        arm.setArmTarget(-armStow);
+      }
+    }
+    else 
+    {
+      if( arm.getWristPos() < Units.degreesToRadians(-90))
+      {
+        arm.setWristTarget(wristStowPosB);
+        
+      }
+      else if (arm.getWristPos() > Units.degreesToRadians(-90))
+      {
+        arm.setWristTarget(wristStowPosF);
+      }
+    }
     
   }
   // Called every time the scheduler runs while the command is scheduled.
@@ -55,6 +65,6 @@ public class Stow extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return arm.getWristPos() < wristStow - 5 && arm.getWristPos() > -wristStow + 5;
   }
 }
