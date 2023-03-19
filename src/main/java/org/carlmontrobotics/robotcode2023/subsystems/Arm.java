@@ -1,186 +1,373 @@
 package org.carlmontrobotics.robotcode2023.subsystems;
 
+import static org.carlmontrobotics.robotcode2023.Constants.Arm.*;
+
 import org.carlmontrobotics.MotorConfig;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
-import org.carlmontrobotics.robotcode2023.Constants;
+import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkMaxAbsoluteEncoder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMax;
 
+// Arm angle is measured from horizontal on the intake side of the robot and bounded between -3π/2 and π/2
+// Wrist angle is measured relative to the arm with 0 being parallel to the arm and bounded between -π and π (Center of Mass of Roller)
 public class Arm extends SubsystemBase {
 
-  //actual arm
-  private CANSparkMax armMotor = MotorControllerFactory.createSparkMax(Constants.Arm.port, MotorConfig.NEO);
-  private CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(Constants.Wrist.port, MotorConfig.NEO);
-  
-  // Conversion factor in radians
-  private SparkMaxAbsoluteEncoder armEncoder = armMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-  private SparkMaxAbsoluteEncoder wristEncoder = wristMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-  
-  private double armGearRatio = 1/225;
-  private double wristGearRatio = 1/84;
-  
-  //FIXME WRIST NEEDS SYSID DONE
-  // kS, kG, kV, kA
-  private final double[] armFeedConsts = {0.20642, 0.6697, 4.3735, 0.24914};
-  private final double[] wristFeedConsts = {.074798, 0.36214, 1.6743, 0.032177};
-  // Arm kG will be dynamically updated, pass 0 to constructor (kG is final in ArmFeedForward)
-  private double armKG = 0;
+    // actual arm
+    private final CANSparkMax armMotor = MotorControllerFactory.createSparkMax(armMotorPort, MotorConfig.NEO);
+    private final CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(wristMotorPort, MotorConfig.NEO);
 
-  private double[] FFvelocity = {0,0};
-  private double[] FFaccel =    {0,0};
-  
-  private ArmFeedforward armFeed = new ArmFeedforward(armFeedConsts[0], armFeedConsts[1], armFeedConsts[2], armFeedConsts[3]);
-  private ArmFeedforward wristFeed = new ArmFeedforward(wristFeedConsts[0], wristFeedConsts[1], wristFeedConsts[2], wristFeedConsts[3]);
-  
-  //PID
-  //FIXME BOTH WRIST AND ARM NEED PID DONE
-  // Arm, Wrist for each "column"
-  private double[] kP = {4.2736,        4.7391};
-  private double[] kI = {0,        0};
-  private double[] kD = {0,        0}; 
-  
-  private double[] posTolerance = {.05, .05};
-  private double[] velTolerance = {1,   1};
-  
-  private PIDController armpid = new PIDController(kP[0], kI[0], kD[0]);
-  //private SparkMaxPIDController armpid = armpid.;
-  private PIDController wristpid = new PIDController(kP[1], kI[1], kD[1]);
+    private final SparkMaxAbsoluteEncoder armEncoder = armMotor
+            .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+    private final SparkMaxAbsoluteEncoder wristEncoder = wristMotor
+            .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
 
-  private double[] goalPos = {3 * Math.PI / 2, 0};
-  private double[] offset = {-0.844154, 0};
-  
-  // needed to calculate feedforward values dynamically
-  private final double ARM_MASS = 6.57;
-  private final double ARM_LENGTH = 38.25;
-  // fraction representing the distance from the arm motor to the center of mass
-  // over the length of the whole arm
-  private final double COM_ARM_LENGTH = 13.23; 
-  private final double ROLLER_MASS = 10.91;
-  // distance of center of mass of roller to the WRIST motor
-  private final double COM_ROLLER_LENGTH = 9.47;
-  private final double g = 9.81;
-  
-  private final double TORQUE_TO_KG = 0;
-  
-  public Arm() {
-    // Conversion factor in radians
-    armEncoder.setPositionConversionFactor(2 * Math.PI);
-    wristEncoder.setPositionConversionFactor(2 * Math.PI);
-    wristEncoder.setInverted(false);
-    armpid.setTolerance(posTolerance[0], velTolerance[0]);
-    wristpid.setTolerance(posTolerance[1], velTolerance[1]);
-    wristEncoder.setZeroOffset(3.50 + Math.PI / 2);
-    //wristpid.enableContinuousInput(0, 2*Math.PI);
-    armpid.enableContinuousInput(0, 2*Math.PI);
-    armEncoder.setZeroOffset(4.02);
-    armMotor.setInverted(true);
-    SmartDashboard.putNumber("WristGoalDeg", 0);
-    SmartDashboard.putNumber("kP: Wis",      kP[1]           );
-    SmartDashboard.putNumber("kI: Wis",      kI[1]           );
-    SmartDashboard.putNumber("kD: Wis",      kD[1]           );
-    SmartDashboard.putNumber("kP: Arm",      kP[0]           );
-    SmartDashboard.putNumber("kI: Arm",      kI[0]           );
-    SmartDashboard.putNumber("kD: Arm",      kD[0]           );
-    SmartDashboard.putNumber("ArmGoalDeg", 0);
+    private PIDController armpid = new PIDController(kP[0], kI[0], kD[0]);
+    private PIDController wristpid = new PIDController(kP[1], kI[1], kD[1]);
 
-  }
+    private final SimpleMotorFeedforward armFeed = new SimpleMotorFeedforward(kS[ARM], kV[ARM], kA[ARM]);
+    private ArmFeedforward wristFeed = new ArmFeedforward(kS[WRIST], kG[WRIST], kV[WRIST], kA[WRIST]);
 
-  @Override
-  public void periodic() {
-    armKG = calculateKG();
-    // SmartDashboard.putNumber("Motor Voltage", wristFeed.calculate(getRobotWristAngle(), 0, 0)
-    // + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
-     wristMotor.setVoltage(wristFeed.calculate(getRobotWristAngle(), 0, 0)
-         + wristpid.calculate(getRobotWristAngle(), goalPos[1]));
-    goalPos[1] = Units.degreesToRadians(SmartDashboard.getNumber("WristGoalDeg", Units.radiansToDegrees(goalPos[1])));
-    goalPos[0] = Units.degreesToRadians(SmartDashboard.getNumber("ArmGoalDeg", Units.radiansToDegrees(goalPos[0])));
-    Rotation2d currentAngle = new Rotation2d(getArmPos());
-    //Rotation2d currentAngle = getCoM().getAngle();
-    double armFeedVolts = armFeed.calculate(currentAngle.getRadians(), 0, 0);
-    double armPIDVolts = armpid.calculate(getArmPos(), goalPos[0]);
-    double armVolts = armFeedVolts + armPIDVolts + armKG * currentAngle.getCos();
-    SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
-    SmartDashboard.putNumber("ArmPIDVolts", armPIDVolts);
-    SmartDashboard.putNumber("Arm Voltage", armVolts);
-    armMotor.setVoltage(armVolts);
+    public PIDController armPID = new PIDController(kP[ARM], kI[ARM], kD[ARM]);
+    public PIDController wristPID = new PIDController(kP[WRIST], kI[WRIST], kD[WRIST]);
+
+    private SendableBuilder senb;
+
+    public int object = CUBE;
+    public int side = BACK;
+
+    public Arm() {
+        armMotor.setInverted(inverted[ARM]);
+        wristMotor.setInverted(inverted[WRIST]);
+
+        armEncoder.setPositionConversionFactor(rotationToRad);
+        wristEncoder.setPositionConversionFactor(rotationToRad);
+        armEncoder.setVelocityConversionFactor(rotationToRad);
+        wristEncoder.setVelocityConversionFactor(rotationToRad);
+
+        wristEncoder.setZeroOffset(offsetRad[ARM]);
+        armEncoder.setZeroOffset(offsetRad[WRIST]);
+
+        armPID.setTolerance(posToleranceRad[ARM], velToleranceRadPSec[ARM]);
+        wristPID.setTolerance(posToleranceRad[WRIST], velToleranceRadPSec[WRIST]);
+
+        SmartDashboard.putBoolean("Toggle", false);
+        senb.update();
+        SmartDashboard.putData("Arm", this);
+    }
     
-    //armMotor.set(SmartDashboard.getNumber("Arm Voltage", 0));
-    SmartDashboard.putNumber("ArmDeg",      Units.radiansToDegrees(getArmPos()));
-    SmartDashboard.putNumber("WisDeg",      Units.radiansToDegrees(getWristPos()));
-    SmartDashboard.putNumber("RobotWisDeg", Units.radiansToDegrees(getRobotWristAngle()));
-    kP[1] = SmartDashboard.getNumber("kP: Wis",      kP[1]           );
-    kI[1] = SmartDashboard.getNumber("kI: Wis",      kI[1]           );
-    kD[1] = SmartDashboard.getNumber("kD: Wis",      kD[1]           );
-    kP[0] = SmartDashboard.getNumber("kP: Arm",      kP[0]           );
-    kI[0] = SmartDashboard.getNumber("kI: Arm",      kI[0]           );
-    kD[0] = SmartDashboard.getNumber("kD: Arm",      kD[0]           );
-    wristpid.setP(kP[1]);
-    wristpid.setI(kI[1]);
-    wristpid.setD(kD[1]);
+    @Override
+    public void periodic() {
+        goalPosRad[0] = Units.degreesToRadians(SmartDashboard.getNumber("ArmGoalDeg",
+        Units.radiansToDegrees(goalPosRad[0])));
+        goalPosRad[1] = Units.degreesToRadians(SmartDashboard.getNumber("WristGoalDeg",
+        Units.radiansToDegrees(goalPosRad[1])));
 
-    armpid.setP(kP[0]);
-    armpid.setI(kI[0]);
-    armpid.setD(kD[0]);
-    
-  }
-  
-  @Override
-  public void initSendable(SendableBuilder builder) {
-    super.initSendable(builder);
-    //builder.addDoubleProperty("ArmFFVelocity",() -> FFvelocity[0],       x -> this.FFvelocity[0] = x);
-    //builder.addDoubleProperty("WisFFVelocity",() -> FFvelocity[0],       x -> this.FFvelocity[0] = x);
-    //builder.addDoubleProperty("ArmFFAccel",   () -> FFaccel[0],          x -> this.FFaccel[0] = x);
-    //builder.addDoubleProperty("WisFFAccel",   () -> FFaccel[0],          x -> this.FFaccel[0] = x);
-    builder.addDoubleProperty("WristGoalPos", () -> goalPos[1], goal -> this.goalPos[1] = goal);
-    builder.addDoubleProperty("ArmPos",       () -> getArmPos(),   null);
-    builder.addDoubleProperty("WisPos",       () -> getWristPos(), null);
-    builder.addDoubleProperty("RobotWisPos",  () -> getRobotWristAngle(), null);
-    builder.addDoubleProperty("kP: Arm",      () -> kP[0],            x -> this.kP[0] = x);
-    builder.addDoubleProperty("kP: Wis",      () -> kP[1],            x -> this.kP[1] = x);
-    builder.addDoubleProperty("kI: Arm",      () -> kI[0],            x -> this.kI[0] = x);
-    builder.addDoubleProperty("kI: Wis",      () -> kI[1],            x -> this.kI[1] = x);
-    builder.addDoubleProperty("kD: Arm",      () -> kD[0],            x -> this.kD[0] = x);
-    builder.addDoubleProperty("kD: Wis",      () -> kD[1],            x -> this.kD[1] = x);
-  } 
-  
-  public double getRobotWristAngle() {
-    return MathUtil.inputModulus((getArmPos() + Math.PI / 2) + getWristPos(), 0, (2 * Math.PI));
-  }
+        // TODO: REMOVE THIS WHEN PID CONSTANTS ARE DONE
+        armPID.setP(kP[ARM]);
+        armPID.setI(kI[ARM]);
+        armPID.setD(kD[ARM]);
+        wristPID.setP(kP[WRIST]);
+        wristPID.setI(kI[WRIST]);
+        wristPID.setD(kD[WRIST]);
+        if (SmartDashboard.getBoolean("Toggle", false)) {
+            senb.update();
+        }
+        
+        driveArm();
+        driveWrist();
+    }
 
-  // distance from center of mass relative to joint holding arm
-  public Translation2d getCoM() {
-    Translation2d comOfArm = new Translation2d(ARM_MASS * COM_ARM_LENGTH, new Rotation2d(getArmPos()));
-    // not exactly center of mass of wrist, but "close enough"
-    Translation2d comOfWrist = new Translation2d(ROLLER_MASS * ARM_LENGTH, new Rotation2d(getArmPos()));
-    Translation2d comOfRoller = new Translation2d(ROLLER_MASS * COM_ROLLER_LENGTH, new Rotation2d(getWristPos()));
-    return new Translation2d((comOfArm.getX() + comOfWrist.getX() + comOfRoller.getX()) / (ARM_MASS + ROLLER_MASS), 
-                             (comOfArm.getY() + comOfWrist.getY() + comOfRoller.getY()) / (ARM_MASS + ROLLER_MASS));
-  }
+    private void driveArm() {
+        double kgv = getKg();
+        double armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(0, 0);
+        double armPIDVolts = armpid.calculate(getArmPos(), goalPosRad[ARM]);
+        double armVolts = armFeedVolts + armPIDVolts;
+        // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
+        // TO MASTER IF THIS IS STILL HERE)
+        SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
+        SmartDashboard.putNumber("ArmPIDVolts", armPIDVolts);
+        SmartDashboard.putNumber("Arm Total Voltage", armVolts);
+        armMotor.setVoltage(armVolts);
+    }
 
-  public double maxHoldingTorque() {
-    return (ARM_MASS + ROLLER_MASS) * g * getCoM().getDistance(new Translation2d()) * getCoM().getAngle().getCos();
-  }
+    private void driveWrist() {
+        double wristFeedVolts = wristFeed.calculate(getWristPosRelativeToGround(), 0, 0);
+        double wristPIDVolts = wristpid.calculate(getWristPos(), goalPosRad[WRIST]);
+        double wristVolts = wristFeedVolts + wristPIDVolts;
+        // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
+        // TO MASTER IF THIS IS STILL HERE)
+        SmartDashboard.putNumber("WristFeedVolts", wristFeedVolts);
+        SmartDashboard.putNumber("WristPIDVolts", wristPIDVolts);
+        SmartDashboard.putNumber("Wrist Total Voltage", wristVolts);
+        wristMotor.setVoltage(wristVolts);
+    }
 
-  public double calculateKG() {
-    return 0;
-    //return TORQUE_TO_KG * maxHoldingTorque();
-  }
+    public double getArmClampedGoal(double goal) {
+        return MathUtil.clamp(MathUtil.inputModulus(goal, ARM_DISCONTINUITY_RAD, ARM_DISCONTINUITY_RAD + 2 * Math.PI),
+                ARM_LOWER_LIMIT_RAD, ARM_UPPER_LIMIT_RAD);
+    }
 
-  public double getWristPos() {
-    return wristEncoder.getPosition();
-  }
-  public double getArmPos() {
-    return armEncoder.getPosition();
-  }
+    public double getWristClampedGoal(double goal) {
+        return MathUtil.clamp(
+                MathUtil.inputModulus(goal, WRIST_DISCONTINUITY_RAD, WRIST_DISCONTINUITY_RAD + 2 * Math.PI),
+                WRIST_LOWER_LIMIT_RAD, WRIST_UPPER_LIMIT_RAD);
+    }
+
+    // distance from center of mass relative to joint holding arm
+    public Translation2d getCoM() {
+        Translation2d comOfArm = new Translation2d(COM_ARM_LENGTH_METERS, Rotation2d.fromRadians(getArmPos()))
+                .times(ARM_MASS_KG);
+        Translation2d comOfRoller = new Translation2d(ARM_LENGTH_METERS, Rotation2d.fromRadians(getArmPos()))
+                .plus(new Translation2d(COM_ROLLER_LENGTH_METERS,
+                        Rotation2d.fromRadians(getWristPosRelativeToGround())))
+                .times(ROLLER_MASS_KG);
+        return comOfArm.plus(comOfRoller).div(ARM_MASS_KG + ROLLER_MASS_KG);
+    }
+
+    public double maxHoldingTorqueNM() {
+        return (ARM_MASS_KG + ROLLER_MASS_KG) * g * getCoM().getNorm();
+    }
+
+    public double getKg() {
+        return V_PER_NM * maxHoldingTorqueNM();
+    }
+
+    public double getArmPos() {
+        return MathUtil.inputModulus(armEncoder.getPosition(), ARM_DISCONTINUITY_RAD,
+                ARM_DISCONTINUITY_RAD + 2 * Math.PI);
+    }
+
+    public double getArmVel() {
+        return armEncoder.getVelocity();
+    }
+
+    public double getWristPos() {
+        return MathUtil.inputModulus(wristEncoder.getPosition(), WRIST_DISCONTINUITY_RAD,
+                WRIST_DISCONTINUITY_RAD + 2 * Math.PI);
+    }
+
+    public double getWristVel() {
+        return wristEncoder.getVelocity();
+    }
+
+    // Unbounded wrist position relative to ground
+    public double getWristPosRelativeToGround() {
+        return getArmPos() + wristEncoder.getPosition();
+    }
+
+    public void setArmTarget(double targetPos) {
+        goalPosRad[ARM] = getArmClampedGoal(targetPos);
+    }
+
+    public void setWristTarget(double targetPos) {
+        goalPosRad[WRIST] = getWristClampedGoal(targetPos);
+    }
+
+    public double getArmGoal(GoalPos[][] pos) {
+        return pos[side][object].armPos;
+    }
+
+    public double getWristGoal(GoalPos[][] pos) {
+        return pos[side][object].wristPos;
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        super.initSendable(builder);
+        senb = builder;
+        builder.addDoubleProperty("WristGoalPos", () -> goalPosRad[WRIST],
+                goal -> goalPosRad[WRIST] = goal);
+        builder.addDoubleProperty("ArmGoalPos", () -> goalPosRad[ARM], goal -> goalPosRad[ARM] = goal);
+        builder.addDoubleProperty("ArmPos", () -> getArmPos(), null);
+        builder.addDoubleProperty("WristPos", () -> getWristPos(), null);
+        builder.addDoubleProperty("RobotWristPos", () -> getWristPosRelativeToGround(), null);
+        builder.addDoubleProperty("kP: Arm", () -> kP[ARM], x -> kP[ARM] = x);
+        builder.addDoubleProperty("kP: Wis", () -> kP[WRIST], x -> kP[WRIST] = x);
+        builder.addDoubleProperty("kI: Arm", () -> kI[ARM], x -> kI[ARM] = x);
+        builder.addDoubleProperty("kI: Wis", () -> kI[WRIST], x -> kI[WRIST] = x);
+        builder.addDoubleProperty("kD: Arm", () -> kD[ARM], x -> kD[ARM] = x);
+        builder.addDoubleProperty("kD: Wis", () -> kD[WRIST], x -> kD[WRIST] = x);
+        // arm control
+        builder.addDoubleProperty("Max FF Vel Arm", () -> MAX_FF_VEL[ARM], x -> MAX_FF_VEL[ARM] = x);
+        builder.addDoubleProperty("Max FF Acc Arm", () -> MAX_FF_ACCEL[ARM], x -> MAX_FF_ACCEL[ARM] = x);
+        builder.addDoubleProperty("Max FF Vel Wis", () -> MAX_FF_VEL[WRIST], x -> MAX_FF_VEL[WRIST] = x);
+        builder.addDoubleProperty("Max FF Acc Wis", () -> MAX_FF_ACCEL[WRIST], x -> MAX_FF_ACCEL[WRIST] = x);
+        // arm positions
+        builder.addDoubleProperty("Arm.Back.High.Cone", () -> GoalPos.HIGH[BACK][CONE].armPos,
+                x -> GoalPos.HIGH[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Mid.Cone", () -> GoalPos.MID[BACK][CONE].armPos,
+                x -> GoalPos.MID[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Low.Cone", () -> GoalPos.LOW[BACK][CONE].armPos,
+                x -> GoalPos.LOW[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Store.Cone", () -> GoalPos.STORED[BACK][CONE].armPos,
+                x -> GoalPos.STORED[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Shelf.Cone", () -> GoalPos.SHELF[BACK][CONE].armPos,
+                x -> GoalPos.SHELF[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Subst.Cone", () -> GoalPos.SUBSTATION[BACK][CONE].armPos,
+                x -> GoalPos.SUBSTATION[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Intak.Cone", () -> GoalPos.INTAKE[BACK][CONE].armPos,
+                x -> GoalPos.INTAKE[BACK][CONE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.High.Cube", () -> GoalPos.HIGH[BACK][CUBE].armPos,
+                x -> GoalPos.HIGH[BACK][CUBE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Mid.Cube", () -> GoalPos.MID[BACK][CUBE].armPos,
+                x -> GoalPos.MID[BACK][CUBE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Low.Cube", () -> GoalPos.LOW[BACK][CUBE].armPos,
+                x -> GoalPos.LOW[BACK][CUBE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Store.Cube", () -> GoalPos.STORED[BACK][CUBE].armPos,
+                x -> GoalPos.STORED[BACK][CUBE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Shelf.Cube", () -> GoalPos.SHELF[BACK][CUBE].armPos,
+                x -> GoalPos.SHELF[BACK][CUBE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Subst.Cube", () -> GoalPos.SUBSTATION[BACK][CUBE].armPos,
+                x -> GoalPos.SUBSTATION[BACK][CUBE].armPos = x);
+        builder.addDoubleProperty("Arm.Back.Intak.Cube", () -> GoalPos.INTAKE[BACK][CUBE].armPos,
+                x -> GoalPos.INTAKE[BACK][CUBE].armPos = x);
+        // wrist positions
+        builder.addDoubleProperty("Wrist.Back.High.Cone", () -> GoalPos.HIGH[BACK][CONE].wristPos,
+                x -> GoalPos.HIGH[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Mid.Cone", () -> GoalPos.MID[BACK][CONE].wristPos,
+                x -> GoalPos.MID[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Low.Cone", () -> GoalPos.LOW[BACK][CONE].wristPos,
+                x -> GoalPos.LOW[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Store.Cone", () -> GoalPos.STORED[BACK][CONE].wristPos,
+                x -> GoalPos.STORED[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Shelf.Cone", () -> GoalPos.SHELF[BACK][CONE].wristPos,
+                x -> GoalPos.SHELF[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Substation.Cone", () -> GoalPos.SUBSTATION[BACK][CONE].wristPos,
+                x -> GoalPos.SUBSTATION[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Intake.Cone", () -> GoalPos.INTAKE[BACK][CONE].wristPos,
+                x -> GoalPos.INTAKE[BACK][CONE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.High.Cube", () -> GoalPos.HIGH[BACK][CUBE].wristPos,
+                x -> GoalPos.HIGH[BACK][CUBE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Mid.Cube", () -> GoalPos.MID[BACK][CUBE].wristPos,
+                x -> GoalPos.MID[BACK][CUBE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Low.Cube", () -> GoalPos.LOW[BACK][CUBE].wristPos,
+                x -> GoalPos.LOW[BACK][CUBE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Store.Cube", () -> GoalPos.STORED[BACK][CUBE].wristPos,
+                x -> GoalPos.STORED[BACK][CUBE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Shelf.Cube", () -> GoalPos.SHELF[BACK][CUBE].wristPos,
+                x -> GoalPos.SHELF[BACK][CUBE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Substation.Cube", () -> GoalPos.SUBSTATION[BACK][CUBE].wristPos,
+                x -> GoalPos.SUBSTATION[BACK][CUBE].wristPos = x);
+        builder.addDoubleProperty("Wrist.Back.Intake.Cube", () -> GoalPos.INTAKE[BACK][CUBE].wristPos,
+                x -> GoalPos.INTAKE[BACK][CUBE].wristPos = x);
+    }
+
+    // In the scenario that initSendable method does not work like last time
+    public void putPositionsOnSmartDashboard() {
+        SmartDashboard.putNumber("LowBackArmCube", GoalPos.LOW[BACK][ARM].armPos);
+        SmartDashboard.putNumber("LowBackWristCube", GoalPos.LOW[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("MidBackArmCube", GoalPos.MID[BACK][ARM].armPos);
+        SmartDashboard.putNumber("MidBackWristCube", GoalPos.MID[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("HighBackArmCube", GoalPos.HIGH[BACK][ARM].armPos);
+        SmartDashboard.putNumber("HighBackWristCube", GoalPos.HIGH[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("StoredBackArmCube", GoalPos.STORED[BACK][ARM].armPos);
+        SmartDashboard.putNumber("StoredBackWristCube", GoalPos.STORED[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("ShelfBackArmCube", GoalPos.SHELF[BACK][ARM].armPos);
+        SmartDashboard.putNumber("ShelfBackWristCube", GoalPos.SHELF[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("SubstationBackArmCube", GoalPos.SUBSTATION[BACK][ARM].armPos);
+        SmartDashboard.putNumber("SubstationBackWristCube", GoalPos.SUBSTATION[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("IntakeBackArmCube", GoalPos.INTAKE[BACK][ARM].armPos);
+        SmartDashboard.putNumber("IntakeBackWristCube", GoalPos.INTAKE[BACK][ARM].wristPos);
+        SmartDashboard.putNumber("LowBackArmCone", GoalPos.LOW[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("LowBackWristCone", GoalPos.LOW[BACK][WRIST].wristPos);
+        SmartDashboard.putNumber("MidBackArmCone", GoalPos.MID[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("MidBackWristCone", GoalPos.MID[BACK][WRIST].wristPos);
+        SmartDashboard.putNumber("HighBackArmCone", GoalPos.HIGH[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("HighBackWristCone", GoalPos.HIGH[BACK][WRIST].wristPos);
+        SmartDashboard.putNumber("StoredBackArmCone", GoalPos.STORED[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("StoredBackWristCone", GoalPos.STORED[BACK][WRIST].wristPos);
+        SmartDashboard.putNumber("ShelfBackArmCone", GoalPos.SHELF[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("ShelfBackWristCone", GoalPos.SHELF[BACK][WRIST].wristPos);
+        SmartDashboard.putNumber("SubstationBackArmCone", GoalPos.SUBSTATION[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("SubstationBackWristCone", GoalPos.SUBSTATION[BACK][WRIST].wristPos);
+        SmartDashboard.putNumber("IntakeBackArmCone", GoalPos.INTAKE[BACK][WRIST].armPos);
+        SmartDashboard.putNumber("IntakeBackWristCone", GoalPos.INTAKE[BACK][WRIST].wristPos);
+    }
+
+    public void getPositionsOnSmartDashboard() {
+        GoalPos.LOW[BACK][CUBE].armPos = SmartDashboard.getNumber("LowArmCube", GoalPos.LOW[BACK][CUBE].armPos);
+        GoalPos.LOW[BACK][CUBE].wristPos = SmartDashboard.getNumber("LowWristCube", GoalPos.LOW[BACK][CUBE].wristPos);
+        GoalPos.MID[BACK][CUBE].armPos = SmartDashboard.getNumber("MidArmCube", GoalPos.MID[BACK][CUBE].armPos);
+        GoalPos.MID[BACK][CUBE].wristPos = SmartDashboard.getNumber("MidWristCube", GoalPos.MID[BACK][CUBE].wristPos);
+        GoalPos.HIGH[BACK][CUBE].armPos = SmartDashboard.getNumber("HighArmCube", GoalPos.HIGH[BACK][CUBE].armPos);
+        GoalPos.HIGH[BACK][CUBE].wristPos = SmartDashboard.getNumber("HighWristCube",
+                GoalPos.HIGH[BACK][CUBE].wristPos);
+        GoalPos.STORED[BACK][CUBE].armPos = SmartDashboard.getNumber("StoredArmCube",
+                GoalPos.STORED[BACK][CUBE].armPos);
+        GoalPos.STORED[BACK][CUBE].wristPos = SmartDashboard.getNumber("StoredWristCube",
+                GoalPos.STORED[BACK][CUBE].wristPos);
+        GoalPos.SHELF[BACK][CUBE].armPos = SmartDashboard.getNumber("ShelfArmCube", GoalPos.SHELF[BACK][CUBE].armPos);
+        GoalPos.SHELF[BACK][CUBE].wristPos = SmartDashboard.getNumber("ShelfWristCube",
+                GoalPos.SHELF[BACK][CUBE].wristPos);
+        GoalPos.SUBSTATION[BACK][CUBE].armPos = SmartDashboard.getNumber("SubstationArmCube",
+                GoalPos.SUBSTATION[BACK][CUBE].armPos);
+        GoalPos.SUBSTATION[BACK][CUBE].wristPos = SmartDashboard.getNumber("SubstationWristCube",
+                GoalPos.SUBSTATION[BACK][CUBE].wristPos);
+        GoalPos.INTAKE[BACK][CUBE].armPos = SmartDashboard.getNumber("IntakeArmCube",
+                GoalPos.INTAKE[BACK][CUBE].armPos);
+        GoalPos.INTAKE[BACK][CUBE].wristPos = SmartDashboard.getNumber("IntakeWristCube",
+                GoalPos.INTAKE[BACK][CUBE].wristPos);
+        GoalPos.LOW[BACK][CONE].armPos = SmartDashboard.getNumber("LowArmCone", GoalPos.LOW[BACK][CONE].armPos);
+        GoalPos.LOW[BACK][CONE].wristPos = SmartDashboard.getNumber("LowWristCone", GoalPos.LOW[BACK][CONE].wristPos);
+        GoalPos.MID[BACK][CONE].armPos = SmartDashboard.getNumber("MidArmCone", GoalPos.MID[BACK][CONE].armPos);
+        GoalPos.MID[BACK][CONE].wristPos = SmartDashboard.getNumber("MidWristCone", GoalPos.MID[BACK][CONE].wristPos);
+        GoalPos.HIGH[BACK][CONE].armPos = SmartDashboard.getNumber("HighArmCone", GoalPos.HIGH[BACK][CONE].armPos);
+        GoalPos.HIGH[BACK][CONE].wristPos = SmartDashboard.getNumber("HighWristCone",
+                GoalPos.HIGH[BACK][CONE].wristPos);
+        GoalPos.STORED[BACK][CONE].armPos = SmartDashboard.getNumber("StoredArmCone",
+                GoalPos.STORED[BACK][CONE].armPos);
+        GoalPos.STORED[BACK][CONE].wristPos = SmartDashboard.getNumber("StoredWristCone",
+                GoalPos.STORED[BACK][CONE].wristPos);
+        GoalPos.SHELF[BACK][CONE].armPos = SmartDashboard.getNumber("ShelfArmCone", GoalPos.SHELF[BACK][CONE].armPos);
+        GoalPos.SHELF[BACK][CONE].wristPos = SmartDashboard.getNumber("ShelfWristCone",
+                GoalPos.SHELF[BACK][CONE].wristPos);
+        GoalPos.SUBSTATION[BACK][CONE].armPos = SmartDashboard.getNumber("SubstationArmCone",
+                GoalPos.SUBSTATION[BACK][CONE].armPos);
+        GoalPos.SUBSTATION[BACK][CONE].wristPos = SmartDashboard.getNumber("SubstationWristCone",
+                GoalPos.SUBSTATION[BACK][CONE].wristPos);
+        GoalPos.INTAKE[BACK][CONE].armPos = SmartDashboard.getNumber("IntakeArmCone",
+                GoalPos.INTAKE[BACK][CONE].armPos);
+        GoalPos.INTAKE[BACK][CONE].wristPos = SmartDashboard.getNumber("IntakeWristCone",
+                GoalPos.INTAKE[BACK][CONE].wristPos);
+    }
+
+    public void putArmControlOnSmartDashboard() {
+        SmartDashboard.putNumber("kP: Wrist", kP[WRIST]);
+        SmartDashboard.putNumber("kI: Wrist", kI[WRIST]);
+        SmartDashboard.putNumber("kD: Wrist", kD[WRIST]);
+        SmartDashboard.putNumber("kP: Arm", kP[ARM]);
+        SmartDashboard.putNumber("kI: Arm", kI[ARM]);
+        SmartDashboard.putNumber("kD: Arm", kD[ARM]);
+        SmartDashboard.putNumber("WristGoalDeg", Units.radiansToDegrees(goalPosRad[WRIST]));
+        SmartDashboard.putNumber("ArmGoalDeg", Units.radiansToDegrees(goalPosRad[ARM]));
+        SmartDashboard.putNumber("Max FF Vel Arm", MAX_FF_VEL[ARM]);
+        SmartDashboard.putNumber("Max FF Accel Arm", MAX_FF_ACCEL[ARM]);
+    }
+
+    public void getArmControlOnSmartDashboard() {
+        goalPosRad[WRIST] = Units.degreesToRadians(
+                SmartDashboard.getNumber("WristGoalDeg", Units.radiansToDegrees(goalPosRad[WRIST])));
+        goalPosRad[ARM] = Units.degreesToRadians(
+                SmartDashboard.getNumber("ArmGoalDeg", Units.radiansToDegrees(goalPosRad[ARM])));
+        MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Max FF Vel Arm", MAX_FF_VEL[ARM]);
+        MAX_FF_ACCEL[ARM] = SmartDashboard.getNumber("Max FF Accel Arm", MAX_FF_ACCEL[ARM]);
+        kP[WRIST] = SmartDashboard.getNumber("kP: Wrist", kP[WRIST]);
+        kI[WRIST] = SmartDashboard.getNumber("kI: Wrist", kI[WRIST]);
+        kD[WRIST] = SmartDashboard.getNumber("kD: Wrist", kD[WRIST]);
+        kP[ARM] = SmartDashboard.getNumber("kP: Arm", kP[ARM]);
+        kI[ARM] = SmartDashboard.getNumber("kI: Arm", kI[ARM]);
+        kD[ARM] = SmartDashboard.getNumber("kD: Arm", kD[ARM]);
+    }
 }
