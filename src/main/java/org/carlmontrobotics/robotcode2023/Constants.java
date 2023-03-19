@@ -58,6 +58,8 @@ public final class Constants {
         // needed to calculate feedforward values dynamically
         public static final double ARM_MASS_KG = Units.lbsToKilograms(6.57);
         public static final double ARM_LENGTH_METERS = Units.inchesToMeters(38.25);
+        
+        public static final double ARM_HEIGHT = 1.0344;
 
         // Distance from the arm motor to the center of mass of the  arm
         public static final double COM_ARM_LENGTH_METERS = Units.inchesToMeters(13.23);
@@ -65,6 +67,7 @@ public final class Constants {
 
         // distance of center of mass of roller to the WRIST motor
         public static final double COM_ROLLER_LENGTH_METERS = Units.inchesToMeters(9.47);
+        public static final double MAX_ROLLER_LENGTH_METERS = 0.4318;
         public static final double g = 9.81;
 
         public static final double V_PER_NM = 0.01423;

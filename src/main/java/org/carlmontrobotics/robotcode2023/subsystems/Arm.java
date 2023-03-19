@@ -183,6 +183,19 @@ public class Arm extends SubsystemBase {
         return pos[side][object].wristPos;
     }
 
+    // returns true if the conditions are *not* safe for the roller to make a 360 degree turn.
+    public boolean isInside() {
+            double theta = getArmPos();
+            double phi = getWristPos();
+            double pi = Math.PI;
+            double h = ARM_HEIGHT;
+            double Lr = MAX_ROLLER_LENGTH_METERS;
+            double La = ARM_LENGTH_METERS;
+
+            return (theta > -pi/2 && h + La * Math.sin(theta) < Lr && theta + phi < -pi/2 ||
+            theta < -pi/2 && h + La * Math.sin(theta) < Lr && theta + phi > -pi/2);
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         super.initSendable(builder);
