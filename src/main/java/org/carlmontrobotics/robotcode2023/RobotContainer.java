@@ -10,10 +10,10 @@ import java.util.HashMap;
 
 import org.carlmontrobotics.lib199.Limelight;
 import org.carlmontrobotics.lib199.path.PPRobotPath;
-import org.carlmontrobotics.robotcode2023.Constants.Arm.GoalPos;
-import org.carlmontrobotics.robotcode2023.Constants.Arm.OI.Driver;
-import org.carlmontrobotics.robotcode2023.Constants.Arm.OI.Manipulator;
-import org.carlmontrobotics.robotcode2023.Constants.Arm.Roller.RollerMode;
+import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
+import org.carlmontrobotics.robotcode2023.Constants.OI.Driver;
+import org.carlmontrobotics.robotcode2023.Constants.OI.Manipulator;
+import org.carlmontrobotics.robotcode2023.Constants.Roller.RollerMode;
 import org.carlmontrobotics.robotcode2023.commands.AlignChargingStation;
 import org.carlmontrobotics.robotcode2023.commands.RotateToFieldRelativeAngle;
 import org.carlmontrobotics.robotcode2023.commands.RunRoller;
