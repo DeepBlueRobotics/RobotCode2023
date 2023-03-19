@@ -1,6 +1,7 @@
 package org.carlmontrobotics.robotcode2023.commands;
 
-import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
+import static org.carlmontrobotics.robotcode2023.Constants.Arm.*;
+
 import org.carlmontrobotics.robotcode2023.subsystems.Arm;
 
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -9,10 +10,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class SetArmWristPositionV2 extends SequentialCommandGroup {
-
-    //TMP
-    static double ARM_VERTICAL_POS = -Math.PI / 2;
-    static double MIN_WRIST_FOLD_POS = Math.PI / 4;
 
     public SetArmWristPositionV2(double armPos, double wristPos, Arm arm) {
         super(
@@ -27,7 +24,7 @@ public class SetArmWristPositionV2 extends SequentialCommandGroup {
             ),
 
             // Fold the wrist
-            new InstantCommand(() -> arm.setWristTarget(GoalPos.STORED[0][0].wristPos)),
+            new InstantCommand(() -> arm.setWristTarget(wristStowPos)),
             new WaitUntilCommand(arm::wristAtSetpoint),
 
             // Move the arm to a point where we can safely unfold the wrist
