@@ -10,25 +10,27 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import org.carlmontrobotics.robotcode2023.subsystems.Arm;
 
 public class Stow extends CommandBase {
+  
+  
+
   /** Creates a new Stow. */
   
   public Stow(Arm aram) {
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(this.Arm = arm);
-    double wristStowPosB = Units.degreesToRadians(-180);
-    double wristStowPosF = Units.degreesToRadians(180);
+    
+   final double wristStowPosB = Units.degreesToRadians(-180);
+   final double wristStowPosF = Units.degreesToRadians(180);
   
-    if(isInside(true))
+    if(aram.isInside(true))
     {
-      if( wristPos < Units.degreesToRadians(-90))
+      if( aram.getWristPos() < Units.degreesToRadians(-90))
       {
-        setWristTarget(wristStowPosB);
+        aram.setWristTarget(wristStowPosB);
         
-       
       }
-      else if (wristPos > Units.degreesToRadians(-90))
+      else if (aram.getWristPos() > Units.degreesToRadians(-90))
       {
-        setWristTarget(wristStowPosF);
+        aram.setWristTarget(wristStowPosF);
       }
     }
     
@@ -39,6 +41,7 @@ public class Stow extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    
     
   }
   // Called every time the scheduler runs while the command is scheduled.

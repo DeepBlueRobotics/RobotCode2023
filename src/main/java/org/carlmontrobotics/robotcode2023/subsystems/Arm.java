@@ -181,7 +181,7 @@ public class Arm extends SubsystemBase {
     }
 
     // returns true if the conditions are *not* safe for the roller to make a 360 degree turn.
-    public boolean isInside() {
+    public boolean isInside(boolean b) {
             double theta = getArmPos();
             double phi = getWristPos();
             double pi = Math.PI;
