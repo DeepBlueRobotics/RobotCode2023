@@ -189,6 +189,7 @@ public final class Constants {
         public static final double ARM_LENGTH_METERS = Units.inchesToMeters(38.25);
 
         public static final double ARM_HEIGHT = 1.0344;
+        public static final double ARM_STOW_ANGLE = 38.33523;
 
         // Distance from the arm motor to the center of mass of the  arm
         public static final double COM_ARM_LENGTH_METERS = Units.inchesToMeters(13.23);
