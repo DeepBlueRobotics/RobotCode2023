@@ -21,7 +21,7 @@ public class Stow extends CommandBase {
    final double wristStowPosB = Units.degreesToRadians(-180);
    final double wristStowPosF = Units.degreesToRadians(180);
   
-    if(aram.isInside(true))
+    if(aram.isInside(false))
     {
       if( aram.getWristPos() < Units.degreesToRadians(-90))
       {

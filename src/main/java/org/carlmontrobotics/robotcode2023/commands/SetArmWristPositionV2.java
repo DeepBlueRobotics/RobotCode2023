@@ -20,7 +20,7 @@ public class SetArmWristPositionV2 extends SequentialCommandGroup {
                     new WaitUntilCommand(arm::armAtSetpoint)
                 ),
                 new InstantCommand(),
-                () -> Math.abs(arm.getArmPos() - ARM_VERTICAL_POS) > MIN_WRIST_FOLD_POS
+                () -> Math.abs(arm.getArmPos() - ARM_VERTICAL_POS) < MIN_WRIST_FOLD_POS
             ),
 
             // Fold the wrist
@@ -50,7 +50,7 @@ public class SetArmWristPositionV2 extends SequentialCommandGroup {
                     new InstantCommand(() -> arm.setWristTarget(wristPos)),
                     new WaitUntilCommand(arm::wristAtSetpoint)
                 ),
-                () -> Math.abs(armPos - ARM_VERTICAL_POS) > MIN_WRIST_FOLD_POS
+                () -> Math.abs(armPos - ARM_VERTICAL_POS) < MIN_WRIST_FOLD_POS
             )
         );
     }
