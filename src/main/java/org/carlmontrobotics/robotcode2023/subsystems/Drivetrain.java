@@ -145,6 +145,11 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         // SmartDashboard.putNumber("Compass Offset", compassOffset);
         // SmartDashboard.putBoolean("Current Magnetic Field Disturbance",
         // gyro.isMagneticDisturbance());
+
+        SmartDashboard.putNumber("turn FL", modules[0].getModuleAngle());
+        SmartDashboard.putNumber("turn FR", modules[1].getModuleAngle());
+        SmartDashboard.putNumber("turn BL", modules[2].getModuleAngle());
+        SmartDashboard.putNumber("turn BR", modules[3].getModuleAngle());
     }
 
     @Override
