@@ -10,6 +10,7 @@ import org.carlmontrobotics.lib199.Limelight;
 import org.carlmontrobotics.lib199.Limelight.Transform;
 import org.carlmontrobotics.lib199.swerve.SwerveConfig;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -148,6 +149,9 @@ public final class Constants {
         public static final double[] positionTolerance = {Units.inchesToMeters(.5), Units.inchesToMeters(.5), 5}; // Meters, Meters, Degrees
         public static final double[] velocityTolerance = {Units.inchesToMeters(1), Units.inchesToMeters(1), 25}; // Meters, Meters, Degrees/Second
 
+        public static final double ROBOT_MASS = Units.lbsToKilograms(112.625);
+        public static final Translation2d COM_ROBOT = new Translation2d();
+
         //#endregion
     }
 
@@ -241,6 +245,7 @@ public final class Constants {
         public static final int WRIST_CURRENT_LIMIT_AMP = 15;
         public static final double ROLLER_COM_CORRECTION_RAD = Units.degreesToRadians(14.48);
         public static double ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = .5;
+        public static final Translation2d ARM_JOINT_POS = new Translation2d(0, 1.184);
 
         //#endregion
 

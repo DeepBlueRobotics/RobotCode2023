@@ -14,6 +14,7 @@ import java.util.function.DoubleSupplier;
 
 import org.carlmontrobotics.robotcode2023.Constants;
 import org.carlmontrobotics.robotcode2023.Robot;
+import org.carlmontrobotics.robotcode2023.subsystems.Arm;
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,22 +25,24 @@ public class TeleopDrive extends CommandBase {
 
   private static final double robotPeriod = Robot.robot.getPeriod();
   private final Drivetrain drivetrain;
-  private DoubleSupplier fwd;
-  private DoubleSupplier str;
-  private DoubleSupplier rcw;
-  private BooleanSupplier slow;
+  private final DoubleSupplier fwd;
+  private final DoubleSupplier str;
+  private final DoubleSupplier rcw;
+  private final BooleanSupplier slow;
+  private final Arm arm;
   private double currentForwardVel = 0;
   private double currentStrafeVel = 0;
 
   /**
    * Creates a new TeleopDrive.
    */
-  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow) {
+  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow, Arm arm) {
     addRequirements(this.drivetrain = drivetrain);
     this.fwd = fwd;
     this.str = str;
     this.rcw = rcw;
     this.slow = slow;
+    this.arm = arm;
   }
 
   // Called when the command is initially scheduled.
@@ -93,6 +96,19 @@ public class TeleopDrive extends CommandBase {
     // If the above math works, no velocity should be greater than the max velocity, so we don't need to limit it.
 
     return new double[] {currentForwardVel, currentStrafeVel, -rotateClockwise};
+  }
+
+  // CoM with origin at robot center on floor
+  public Translation2d getCoM() {
+    Translation2d comArm = arm.getCoM().plus(Constants.Arm.ARM_JOINT_POS);
+
+    return comArm.times(Constants.Arm.ARM_MASS_KG + Constants.Arm.ROLLER_MASS_KG).plus(COM_ROBOT.times(ROBOT_MASS - Constants.Arm.ARM_MASS_KG - Constants.Arm.ROLLER_MASS_KG));
+  }
+
+  public double getAccelLimit() {
+    Translation2d com = getCoM();
+
+    return Math.abs(wheelBase / 2 - com.getX()) * Constants.g / com.getY();
   }
 
   // Called once the command ends or is interrupted.
