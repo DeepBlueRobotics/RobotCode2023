@@ -5,6 +5,7 @@ import static org.carlmontrobotics.robotcode2023.Constants.Arm.*;
 import org.carlmontrobotics.MotorConfig;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
 import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
+import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -21,6 +22,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 // Arm angle is measured from horizontal on the intake side of the robot and bounded between -3π/2 and π/2
@@ -72,12 +74,23 @@ public class Arm extends SubsystemBase {
         setArmTarget(goalState[ARM].position, 0);
         setWristTarget(goalState[WRIST].position, 0);
         wristMotor.setSmartCurrentLimit(WRIST_CURRENT_LIMIT_AMP);
+
+        SmartDashboard.putNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
+        SmartDashboard.putNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
+        SmartDashboard.putNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
+        SmartDashboard.putNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
+        SmartDashboard.putNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
+        SmartDashboard.putNumber("Arm Tolerance Vel", velToleranceRadPSec[ARM]);
+        SmartDashboard.putNumber("Wrist Tolerance Vel", velToleranceRadPSec[WRIST]);
     }
 
     @Override
     public void periodic() {
 
         // TODO: REMOVE THIS WHEN PID CONSTANTS ARE DONE
+        MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
+        MAX_FF_VEL[WRIST] = SmartDashboard.getNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
+        ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = SmartDashboard.getNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
         wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[WRIST], MAX_FF_ACCEL[WRIST]);
         armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[ARM], MAX_FF_ACCEL[ARM]);
         armPID.setP(kP[ARM]);
@@ -86,6 +99,14 @@ public class Arm extends SubsystemBase {
         wristPID.setP(kP[WRIST]);
         wristPID.setI(kI[WRIST]);
         wristPID.setD(kD[WRIST]);
+        SmartDashboard.putBoolean("ArmPIDAtSetpoint", armPID.atSetpoint());
+        SmartDashboard.putBoolean("ArmProfileFinished", armProfile.isFinished(armProfileTimer.get()));
+        SmartDashboard.putBoolean("WristPIDAtSetpoint", wristPID.atSetpoint());
+        SmartDashboard.putBoolean("WristProfileFinished", wristProfile.isFinished(wristProfileTimer.get()));
+        posToleranceRad[ARM] = SmartDashboard.getNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
+        posToleranceRad[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
+        velToleranceRadPSec[ARM] = SmartDashboard.getNumber("Arm Tolerance Vel", velToleranceRadPSec[ARM]);
+        velToleranceRadPSec[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Vel", velToleranceRadPSec[WRIST]);
 
         SmartDashboard.putNumber("MaxHoldingTorque", maxHoldingTorqueNM());
         SmartDashboard.putNumber("V_PER_NM", getV_PER_NM());
@@ -94,8 +115,24 @@ public class Arm extends SubsystemBase {
         SmartDashboard.putNumber("Arm Current", armMotor.getOutputCurrent());
         SmartDashboard.putNumber("Wrist Current", wristMotor.getOutputCurrent());
 
+        SmartDashboard.putNumber("ArmPos", getArmPos());
+        SmartDashboard.putNumber("WristPos", getWristPos());
+
         driveArm(armProfile.calculate(armProfileTimer.get()));
         driveWrist(wristProfile.calculate(wristProfileTimer.get()));
+
+        autoCancelArmCommand();
+    }
+
+    public void autoCancelArmCommand() {
+        double[] requestedSpeeds = ((ArmTeleop) getDefaultCommand()).getRequestedSpeeds();
+
+        if(requestedSpeeds[0] != 0 || requestedSpeeds[1] != 0) {
+            Command currentArmCommand = getCurrentCommand();
+            if(currentArmCommand != getDefaultCommand() && currentArmCommand != null) {
+                currentArmCommand.cancel();
+            }
+        }
     }
 
     //#region Drive Methods
@@ -149,7 +186,7 @@ public class Arm extends SubsystemBase {
     public void setWristTarget(double targetPos, double targetVel) {
         targetPos = getWristClampedGoal(targetPos);
 
-        if(positionForbidden(getArmPos(), targetPos)) return;
+        if(wristMovementForbidden(getArmPos(), targetPos, targetPos - getWristPos())) return;
 
         wristProfile = new TrapezoidProfile(wristConstraints, new TrapezoidProfile.State(targetPos, targetVel), wristProfile.calculate(wristProfileTimer.get()));
         wristProfileTimer.reset();
@@ -242,7 +279,7 @@ public class Arm extends SubsystemBase {
         return (ARM_MASS_KG + ROLLER_MASS_KG) * g * getCoM().getNorm();
     }
 
-    public double getV_PER_NM() {
+    public static double getV_PER_NM() {
         double kg = kG[ARM];
         double phi = 2.638;
         double Ma = ARM_MASS_KG;
@@ -260,17 +297,43 @@ public class Arm extends SubsystemBase {
         return getV_PER_NM() * maxHoldingTorqueNM();
     }
 
-    public boolean positionForbidden(double armPos, double wristPos) {
+    public static Translation2d getWristTipPosition(double armPos, double wristPos) {
         Translation2d arm = new Translation2d(ARM_LENGTH_METERS, Rotation2d.fromRadians(armPos));
-        Translation2d roller = new Translation2d(ROLLER_LENGTH_METERS, Rotation2d.fromRadians(armPos + wristPos));
+        Translation2d roller = new Translation2d(ROLLER_LENGTH_METERS, Rotation2d.fromRadians(armPos + wristPos + ROLLER_COM_CORRECTION_RAD));
 
-        Translation2d tip = arm.plus(roller);
+        return arm.plus(roller);
+    }
 
+    public boolean wristMovementForbidden(double armPos, double wristPos, double wristVelSign) {
+        // If the position is not forbidden, then the movement is not forbidden
+        if(!positionForbidden(armPos, wristPos)) return false;
+
+        Translation2d tip = getWristTipPosition(armPos, wristPos);
+
+        // Copied from positionForbidden
         boolean horizontal = tip.getX() < DT_TOTAL_WIDTH / 2 && tip.getX() > -DT_TOTAL_WIDTH / 2;
+        boolean vertical = tip.getY() > -ARM_JOINT_TOTAL_HEIGHT && tip.getY() < (-ARM_JOINT_TOTAL_HEIGHT + SAFE_HEIGHT);
+
+        // If the wrist is inside the drivetrain, fold towards the
+        if(horizontal && vertical) {
+            return Math.signum(getWristPos() + ROLLER_COM_CORRECTION_RAD) != Math.signum(wristVelSign);
+        }
+
+        // Otherwise, fold away from vertical
+        double tipAngle = MathUtil.inputModulus(armPos + wristPos + ROLLER_COM_CORRECTION_RAD, -3 * Math.PI / 2, Math.PI / 2);
+        return Math.signum(tipAngle + Math.PI / 2) != Math.signum(wristVelSign);
+    }
+
+    public static boolean positionForbidden(double armPos, double wristPos) {
+
+        Translation2d tip = getWristTipPosition(armPos, wristPos);
+
+        boolean horizontal = tip.getX() < DT_TOTAL_WIDTH / 2 + DT_EXTENSION_FOR_ROLLER && tip.getX() > -DT_TOTAL_WIDTH / 2;
         boolean vertical = tip.getY() > -ARM_JOINT_TOTAL_HEIGHT && tip.getY() < (-ARM_JOINT_TOTAL_HEIGHT + SAFE_HEIGHT);
         boolean ground = tip.getY() < -ARM_JOINT_TOTAL_HEIGHT;
 
-        return horizontal && vertical || ground;
+        //return horizontal && vertical || ground;
+        return false;
     }
 
     //#endregion
