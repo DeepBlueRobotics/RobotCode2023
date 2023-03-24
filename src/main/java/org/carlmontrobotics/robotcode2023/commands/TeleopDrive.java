@@ -17,7 +17,6 @@ import org.carlmontrobotics.robotcode2023.Robot;
 import org.carlmontrobotics.robotcode2023.subsystems.Arm;
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
@@ -80,20 +79,30 @@ public class TeleopDrive extends CommandBase {
     // Limit acceleration of the robot
     double accelerationX = (forward - currentForwardVel) / robotPeriod;
     double accelerationY = (strafe - currentStrafeVel) / robotPeriod;
-    double translationalAcceleration = Math.hypot(accelerationX, accelerationY);
-    if(translationalAcceleration > autoMaxAccelMps2) {
-      Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2, Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
-      Translation2d limitedVelocityVector = limitedAccelerationVector.times(robotPeriod);
-      currentForwardVel += limitedVelocityVector.getX();
-      currentStrafeVel += limitedVelocityVector.getY();
-    } else {
-      currentForwardVel = forward;
-      currentStrafeVel = strafe;
-    }
+
+    double maxXAccel = (Math.signum(accelerationX) == Math.signum(getCoM().getX()) ? getForwardNearAccelLimit() : getForwardFarAccelLimit());
+    if(Math.abs(accelerationX) > maxXAccel) accelerationX = Math.copySign(maxXAccel, accelerationX);
+    double maxYAccel = getStrafeAccelLimit();
+    if(Math.abs(accelerationY) > maxYAccel) accelerationY = Math.copySign(maxYAccel, accelerationY);
+
+    // double translationalAcceleration = Math.hypot(accelerationX, accelerationY);
+    // if(translationalAcceleration > autoMaxAccelMps2) {
+    //   Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2, Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
+    //   Translation2d limitedVelocityVector = limitedAccelerationVector.times(robotPeriod);
+    //   currentForwardVel += limitedVelocityVector.getX();
+    //   currentStrafeVel += limitedVelocityVector.getY();
+    // } else {
+    //   currentForwardVel = forward;
+    //   currentStrafeVel = strafe;
+    // }
 
     // ATM, there is no rotational acceleration limit
 
     // If the above math works, no velocity should be greater than the max velocity, so we don't need to limit it.
+
+    // Limit rotation speed
+    double maxRotation = getMaxRotationSpeed();
+    if(Math.abs(rotateClockwise) > maxRotation) rotateClockwise = Math.copySign(maxRotation, rotateClockwise);
 
     return new double[] {currentForwardVel, currentStrafeVel, -rotateClockwise};
   }
@@ -105,10 +114,30 @@ public class TeleopDrive extends CommandBase {
     return comArm.times(Constants.Arm.ARM_MASS_KG + Constants.Arm.ROLLER_MASS_KG).plus(COM_ROBOT.times(ROBOT_MASS - Constants.Arm.ARM_MASS_KG - Constants.Arm.ROLLER_MASS_KG));
   }
 
-  public double getAccelLimit() {
+  // Gets the acceleration limit in the direction opposite the CoM
+  public double getForwardFarAccelLimit() {
     Translation2d com = getCoM();
 
     return Math.abs(wheelBase / 2 - com.getX()) * Constants.g / com.getY();
+  }
+
+  // Gets the acceleration limit in the direction opposite the CoM
+  public double getForwardNearAccelLimit() {
+    Translation2d com = getCoM();
+
+    return Math.abs(wheelBase / 2 + com.getX()) * Constants.g / com.getY();
+  }
+
+  public double getStrafeAccelLimit() {
+    Translation2d com = getCoM();
+
+    return trackWidth * Constants.g / com.getY();
+  }
+
+  public double getMaxRotationSpeed() {
+    Translation2d com = getCoM();
+
+    return Math.sqrt(wheelBase / com.getY());
   }
 
   // Called once the command ends or is interrupted.
