@@ -6,6 +6,7 @@ package org.carlmontrobotics.robotcode2023;
 
 import static org.carlmontrobotics.robotcode2023.Constants.OI.MIN_AXIS_TRIGGER_VALUE;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
@@ -27,19 +28,32 @@ import org.carlmontrobotics.robotcode2023.subsystems.Arm;
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
 import org.carlmontrobotics.robotcode2023.subsystems.Roller;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.auto.PIDConstants;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
+
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.XboxController.Axis;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -97,6 +111,7 @@ public class RobotContainer {
       new PPRobotPath("Mid Basic", drivetrain, false, eventMap),
       new PPRobotPath("Basic 3", drivetrain, false, eventMap)
     };
+   
 
     autoSelectors = new DigitalInput[Math.min(autoPaths.length, 26)];
     for(int i = 0; i < autoSelectors.length; i++) autoSelectors[i] = new DigitalInput(i);
@@ -165,8 +180,28 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    // PPRobotPath autoPath = new PPRobotPath("New Path", drivetrain, false, new HashMap<>());
-    PPRobotPath autoPath = new PPRobotPath("Spit Cone", drivetrain, false, eventMap);
+    // ArrayList<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Mid Basic", new PathConstraints(4, 3));
+    // SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(drivetrain::getPose, drivetrain::setPose, new PIDConstants(Constants.Drivetrain.xPIDController), new PIDConstants(thetaPIDController), null, eventMap, drivetrain)
+    // PPRobotPath[] paths = new PPRobotPath[] {
+      // new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap), 
+      // new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap), 
+      // new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap) 
+    // };
+    Command[] commands = new Command[] {
+      new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm), 
+      new SetArmWristGoalPreset(GoalPos.STORED, () -> false, () -> false, arm),
+      new ProxyCommand(() -> new AlignChargingStation(drivetrain))
+    };
+    SequentialCommandGroup midBasic = new SequentialCommandGroup();
+    for (int i = 0; i < commands.length; i++) {
+      // midBasic.addCommands(paths[i].getPathCommand(false, true).raceWith(new WaitCommand(2)));
+      //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
+      midBasic.addCommands(commands[i].raceWith(new WaitCommand(2)));
+      //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
+    }
+    PPRobotPath autoPath = new PPRobotPath("New Path", drivetrain, false, new HashMap<>());
+    // PPRobotPath autoPath = new PPRobotPath("Spit Cone", drivetrain, false, eventMap);
+    // PPRobotPath autoPath = null;
     // for(int i = 0; i < autoSelectors.length; i++) {
     //   if(!autoSelectors[i].get()) {
     //     System.out.println("Using Path: " + i);
@@ -174,8 +209,16 @@ public class RobotContainer {
     //     break;
     //   }
     // }
-
-    return autoPath == null ? new PrintCommand("No Autonomous Routine selected") : autoPath.getPathCommand(true, true);
+    // SendableBuilderImpl builder = new SendableBuilderImpl() {
+    //   public void addIntegerProperty(String key, java.util.function.LongSupplier getter, java.util.function.LongConsumer setter) {
+    //     Robot.robot.addPeriodic(() -> SmartDashboard.putNumber("AUTO TEST: " + key, getter.getAsLong()), MIN_AXIS_TRIGGER_VALUE);
+    //   };
+    // };
+    // builder.setTable(NetworkTableInstance.getDefault().getTable("SmartDashboard"));
+    // midBasic.initSendable(builder);
+    SmartDashboard.putData(midBasic);
+    return midBasic;
+    // return autoPath == null ? new PrintCommand("No Autonomous Routine selected") : autoPath.getPathCommand(true, true);
     // return autoPath == null ? new PrintCommand("null :(") : autoPath.getPathCommand(true, true);
   }
 

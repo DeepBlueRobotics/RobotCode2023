@@ -30,6 +30,7 @@ public class Roller extends SubsystemBase {
     private final AddressableLED led = new AddressableLED(ledPort);
     private final AddressableLEDBuffer ledBuffer = new AddressableLEDBuffer(ledLength);
     private boolean hadGamePiece = false;
+    private double rollerGearing = 9;
 
     private Command resetColorCommand = new SequentialCommandGroup(
             new WaitCommand(ledDefaultColorRestoreTime),
@@ -40,6 +41,7 @@ public class Roller extends SubsystemBase {
     };
 
     public Roller() {
+        motor.getEncoder().setPositionConversionFactor(1 / rollerGearing * 2 * Math.PI);
         led.setLength(ledBuffer.getLength());
         setLedColor(defaultColor);
         //SmartDashboard.putData(this);
