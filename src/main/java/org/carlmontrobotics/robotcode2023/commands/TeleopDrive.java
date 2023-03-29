@@ -45,7 +45,7 @@ public class TeleopDrive extends CommandBase {
     this.str = str;// decimal % of left X joystick value
     this.rcw = rcw;// decimal % of right X joystick value
     this.slow = slow;
-    this.lmbjp = true;
+    this.lmbjp = limitMaxesByJoyPercent;
   }
 
   // Called when the command is initially scheduled.
@@ -78,9 +78,9 @@ public class TeleopDrive extends CommandBase {
     double driveMultiplier = slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed;
     double rotationMultiplier = slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation;
 
-    forward *= driveMultiplier;
-    strafe *= driveMultiplier;
-    rotateClockwise *= rotationMultiplier;
+    forward *= driveMultiplier * kDriveMult;
+    strafe *= driveMultiplier * kDriveMult;
+    rotateClockwise *= rotationMultiplier * kTurnMult;
 
     // Limit acceleration of the robot
     double accelerationX = (forward - currentForwardVel) / robotPeriod;
