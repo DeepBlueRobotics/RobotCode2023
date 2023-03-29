@@ -5,6 +5,7 @@
 package org.carlmontrobotics.robotcode2023;
 
 import java.awt.Color;
+import java.util.stream.IntStream;
 
 import org.carlmontrobotics.lib199.Limelight;
 import org.carlmontrobotics.lib199.Limelight.Transform;
@@ -71,8 +72,14 @@ public final class Constants {
         // V = kS + kV * v + kA * a
         // 12 = 0.2 + 0.00463 * v
         // v = (12 - 0.2) / 0.00463 = 2548.596 degrees/s
-        public static final double[] turnkV = {0.00463, 0.00463, 0.00463, 0.00463};
-        public static final double[] turnkA = {0.000115, 0.000115, 0.000115, 0.000115};
+        public static final double turnVmult = .7;
+        public static final double turnAmult = .7;
+        public static final double[] turnkV = IntStream.range(0, 4).mapToDouble(i -> {
+          return (new double[] {0.00463, 0.00463, 0.00463, 0.00463}[i] * turnVmult);
+          }).toArray();
+        public static final double[] turnkA = IntStream.range(0, 4).mapToDouble(i -> {
+          return (new double[] {.000115, .000115, .000115, .000115}[i] * turnAmult);
+          }).toArray();
 
         // kP is an average of the forward and backward kP values
         // Forward: 1.72, 1.71, 1.92, 1.94
@@ -85,12 +92,25 @@ public final class Constants {
 
         public static final double[] kForwardVolts = {0.129, 0.108, 0.14, 0.125};
         public static final double[] kBackwardVolts = {0.115, 0.169, 0.13, 0.148};
-
-        public static final double[] kForwardVels = {2.910/1.1, 2.970/1.1, 2.890/1.1, 2.930/1.1};
-        public static final double[] kBackwardVels = {2.890/1.1, 2.800/1.1, 2.850/1.1, 2.820/1.1};
-        public static final double[] kForwardAccels = {0.145, 0.149, 0.192, 0.198};
-        public static final double[] kBackwardAccels = {0.192, 0.187, 0.264, 0.176};
-
+        
+        public static final double kfVelMult = .6363;
+        public static final double kbVelMult = .6363;
+        public static final double kfAccMult = .7;
+        public static final double kbAccMult = .7;
+        public static final double[] kForwardVels = IntStream.range(0, 4).mapToDouble(i -> {
+          return new double[] {2.910, 2.970, 2.890, 2.930}[i] * kfVelMult;
+          }).toArray();
+        public static final double[] kBackwardVels = IntStream.range(0, 4).mapToDouble(i -> {
+          return new double[] {2.890, 2.800, 2.850, 2.820}[i] * kbVelMult;
+          }).toArray();
+        public static final double[] kForwardAccels = IntStream.range(0, 4).mapToDouble(i -> {
+          return new double[] {0.145, 0.149, 0.192, 0.198}[i] * kfAccMult;
+          }).toArray();
+        public static final double[] kBackwardAccels = IntStream.range(0, 4).mapToDouble(i -> {
+          return new double[] {0.192, 0.187, 0.264, 0.176}[i] * kbAccMult;
+          }).toArray();
+        
+        //CLARIFICATION: these maxes apply in ALL modes, not only AUTO
         public static final double autoMaxSpeedMps = 0.35 * 4.4;  // Meters / second
         public static final double autoMaxAccelMps2 = mu * g;  // Meters / seconds^2
         public static final double autoMaxVolt = 10.0;   // For Drivetrain voltage constraint in RobotPath.java

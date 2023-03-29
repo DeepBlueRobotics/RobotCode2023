@@ -30,22 +30,27 @@ public class TeleopDrive extends CommandBase {
   private BooleanSupplier slow;
   private double currentForwardVel = 0;
   private double currentStrafeVel = 0;
+  
+  private boolean lmbjp = false; //if true, limit ALL max speeds by their respective joystick % inputs
+  private double scaledMax(double max, double percentVal) {
+    return (lmbjp) ? percentVal*max : max;
+  };
 
   /**
    * Creates a new TeleopDrive.
    */
-  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow) {
+  public TeleopDrive(Drivetrain drivetrain, boolean limitMaxesByJoyPercent, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow) {
     addRequirements(this.drivetrain = drivetrain);
-    this.fwd = fwd;
-    this.str = str;
-    this.rcw = rcw;
+    this.fwd = fwd;// decimal % of left Y joystick value
+    this.str = str;// decimal % of left X joystick value
+    this.rcw = rcw;// decimal % of right X joystick value
     this.slow = slow;
+    this.lmbjp = true;
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -60,12 +65,15 @@ public class TeleopDrive extends CommandBase {
     double forward = fwd.getAsDouble();
     double strafe = str.getAsDouble();
     double rotateClockwise = rcw.getAsDouble();
+    
+    // Max speeds are scaled by joystick value as well if "limitMaxesByJoyPercent" was set to true 
+    // (requested by drivers)
     if (Math.abs(forward) <= Constants.OI.JOY_THRESH) forward = 0.0;
-    else forward *= maxForward;
+    else forward *= scaledMax(maxForward, forward);
     if (Math.abs(strafe) <= Constants.OI.JOY_THRESH) strafe = 0.0;
-    else strafe *= maxStrafe;
+    else strafe *= scaledMax(maxStrafe, strafe);
     if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH) rotateClockwise = 0.0;
-    else rotateClockwise *= maxRCW;
+    else rotateClockwise *= scaledMax(maxRCW, rotateClockwise);
 
     double driveMultiplier = slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed;
     double rotationMultiplier = slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation;
