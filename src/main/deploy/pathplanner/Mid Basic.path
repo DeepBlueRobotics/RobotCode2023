@@ -46,8 +46,8 @@
           "PrintCube"
         ],
         "executionBehavior": "sequential",
-        "waitBehavior": "deadline",
-        "waitTime": 2.0
+        "waitBehavior": "after",
+        "waitTime": 0.0
       }
     },
     {
@@ -74,8 +74,8 @@
           "PrintStored"
         ],
         "executionBehavior": "sequential",
-        "waitBehavior": "deadline",
-        "waitTime": 2.0
+        "waitBehavior": "after",
+        "waitTime": 0.0
       }
     },
     {
@@ -99,8 +99,8 @@
           "PrintAlign"
         ],
         "executionBehavior": "parallel",
-        "waitBehavior": "none",
-        "waitTime": 0
+        "waitBehavior": "after",
+        "waitTime": 0.0
       }
     }
   ],

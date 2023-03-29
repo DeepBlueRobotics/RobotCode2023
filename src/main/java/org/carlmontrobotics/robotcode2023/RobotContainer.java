@@ -90,9 +90,9 @@ public class RobotContainer {
       eventMap.put("Cone Intake Pos.", new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, () -> false, arm));
       eventMap.put("Cube Intake Pos.", new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm));
       eventMap.put("Auto-Align", new ProxyCommand(() -> new AlignChargingStation(drivetrain)));
-      eventMap.put("PrintAlign", new PrintCommand("Aligning"));
-      eventMap.put("PrintCube", new PrintCommand("Cube"));
-      eventMap.put("PrintStored", new PrintCommand("Stored"));
+      eventMap.put("PrintAlign", new PrintCommand("=================================Aligning================================="));
+      eventMap.put("PrintCube", new PrintCommand("=================================Cube================================="));
+      eventMap.put("PrintStored", new PrintCommand("=================================Stored================================="));
       eventMap.put("PrintOne", new PrintCommand("one"));
       eventMap.put("PrintTwo", new PrintCommand("two"));
       eventMap.put("PrintEnd", new PrintCommand("end"));
@@ -183,23 +183,28 @@ public class RobotContainer {
     // ArrayList<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Mid Basic", new PathConstraints(4, 3));
     // SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(drivetrain::getPose, drivetrain::setPose, new PIDConstants(Constants.Drivetrain.xPIDController), new PIDConstants(thetaPIDController), null, eventMap, drivetrain)
     // PPRobotPath[] paths = new PPRobotPath[] {
-      // new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap), 
-      // new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap), 
-      // new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap) 
+    //   new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap), 
+    //   new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap), 
+    //   new PPRobotPath("Mid Basic 1", drivetrain, false, eventMap) 
     // };
-    Command[] commands = new Command[] {
-      new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm), 
-      new SetArmWristGoalPreset(GoalPos.STORED, () -> false, () -> false, arm),
-      new ProxyCommand(() -> new AlignChargingStation(drivetrain))
-    };
-    SequentialCommandGroup midBasic = new SequentialCommandGroup();
-    for (int i = 0; i < commands.length; i++) {
-      // midBasic.addCommands(paths[i].getPathCommand(false, true).raceWith(new WaitCommand(2)));
-      //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
-      midBasic.addCommands(commands[i].raceWith(new WaitCommand(2)));
-      //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
-    }
-    PPRobotPath autoPath = new PPRobotPath("New Path", drivetrain, false, new HashMap<>());
+    // Command[] commands = new Command[] {
+    //   new PrintCommand("ksdhguedhfkurdgfvxevgfn chcgvycfhgvdxgvdyuxvjsdxgsiegiu0chcgvycfhgvdxgvdyuxvjsdxgsiegiu0"),
+    //   new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm), 
+    //   new PrintCommand("====================INTAKE COMMAND DONE==========================="),
+    //   new SetArmWristGoalPreset(GoalPos.STORED, () -> false, () -> false, arm),
+    //   new PrintCommand("====================STORED COMMAND DONE==========================="),
+    //   new ProxyCommand(() -> new AlignChargingStation(drivetrain)),
+    //   new PrintCommand("====================ALIGN COMMAND DONE==========================="),
+
+    // };
+    // SequentialCommandGroup midBasic = new SequentialCommandGroup();
+    // for (int i = 0; i < commands.length; i++) {
+    //   // midBasic.addCommands(paths[i].getPathCommand(false, true).raceWith(new WaitCommand(2)));
+    //   //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
+    //   midBasic.addCommands(commands[i]);
+    //   //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
+    // }
+    PPRobotPath autoPath = new PPRobotPath("Mid Basic", drivetrain, false, new HashMap<>());
     // PPRobotPath autoPath = new PPRobotPath("Spit Cone", drivetrain, false, eventMap);
     // PPRobotPath autoPath = null;
     // for(int i = 0; i < autoSelectors.length; i++) {
@@ -216,9 +221,9 @@ public class RobotContainer {
     // };
     // builder.setTable(NetworkTableInstance.getDefault().getTable("SmartDashboard"));
     // midBasic.initSendable(builder);
-    SmartDashboard.putData(midBasic);
-    return midBasic;
-    // return autoPath == null ? new PrintCommand("No Autonomous Routine selected") : autoPath.getPathCommand(true, true);
+    // SmartDashboard.putData(midBasic);
+    //return midBasic;
+    return autoPath == null ? new PrintCommand("No Autonomous Routine selected") : autoPath.getPathCommand(true, true);
     // return autoPath == null ? new PrintCommand("null :(") : autoPath.getPathCommand(true, true);
   }
 
