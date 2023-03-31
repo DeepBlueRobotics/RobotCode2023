@@ -5,6 +5,7 @@
 package org.carlmontrobotics.robotcode2023;
 
 import static org.carlmontrobotics.robotcode2023.Constants.OI.MIN_AXIS_TRIGGER_VALUE;
+import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.turnFaceLimelightDeg;
 
 import java.util.HashMap;
 import java.util.function.BooleanSupplier;
@@ -27,6 +28,7 @@ import org.carlmontrobotics.robotcode2023.subsystems.Arm;
 import org.carlmontrobotics.robotcode2023.subsystems.Drivetrain;
 import org.carlmontrobotics.robotcode2023.subsystems.Roller;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -129,6 +131,9 @@ public class RobotContainer {
     new JoystickButton(driverController, Driver.rotateToFieldRelativeAngle90Deg).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(-90), drivetrain));
     new JoystickButton(driverController, Driver.rotateToFieldRelativeAngle180Deg).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(180), drivetrain));
     new JoystickButton(driverController, Driver.rotateToFieldRelativeAngle270Deg).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(90), drivetrain));
+    axisTrigger(driverController, Driver.angleLeftButton).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(MathUtil.inputModulus(drivetrain.getHeadingDeg() - turnFaceLimelightDeg, -180, 180)), drivetrain));
+    axisTrigger(driverController, Driver.angleRightButton).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(MathUtil.inputModulus(drivetrain.getHeadingDeg() + turnFaceLimelightDeg, -180, 180)), drivetrain));
+    
   }
 
   private void configureButtonBindingsManipulator() {

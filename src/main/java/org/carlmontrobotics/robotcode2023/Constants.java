@@ -108,7 +108,7 @@ public final class Constants {
         public static final SwerveConfig swerveConfig = new SwerveConfig(wheelDiameterMeters, driveGearing, mu, autoCentripetalAccel, kForwardVolts, kForwardVels, kForwardAccels, kBackwardVolts, kBackwardVels, kBackwardAccels, drivekP, drivekI, drivekD, turnkP, turnkI, turnkD, turnkS, turnkV, turnkA, turnZero, driveInversion, reversed, driveModifier, turnInversion);
 
         public static final Limelight.Transform limelightTransformForPoseEstimation = Transform.BOTPOSE_WPIBLUE;
-
+        public static final double turnFaceLimelightDeg = 35;
         //#endregion
 
         //#region Ports
@@ -398,6 +398,9 @@ public final class Constants {
         public static final class Driver {
             public static final int port = 0;
 
+            public static final Axis angleLeftButton = Axis.kLeftTrigger;
+            public static final Axis angleRightButton = Axis.kRightTrigger;
+            
             public static final int slowDriveButton = Button.kLeftBumper.value;
             public static final int chargeStationAlignButton = Button.kBack.value;
             public static final int resetFieldOrientationButton = Button.kRightBumper.value;
