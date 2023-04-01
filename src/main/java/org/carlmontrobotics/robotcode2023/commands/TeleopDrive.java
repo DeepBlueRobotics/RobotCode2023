@@ -51,6 +51,7 @@ public class TeleopDrive extends CommandBase {
   @Override
   public void execute() {
     double[] speeds = getRequestedSpeeds();
+
     drivetrain.drive(speeds[0], speeds[1], speeds[2]);
   }
 
@@ -67,12 +68,12 @@ public class TeleopDrive extends CommandBase {
     if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH) rotateClockwise = 0.0;
     else rotateClockwise *= maxRCW;
 
-    double driveMultiplier = slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed;
-    double rotationMultiplier = slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation;
-
-    forward *= driveMultiplier;
-    strafe *= driveMultiplier;
-    rotateClockwise *= rotationMultiplier;
+    //double driveMultiplier = slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed;
+    //double rotationMultiplier = slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation;
+    
+    // forward *= driveMultiplier;
+    // strafe *= driveMultiplier;
+    // rotateClockwise *= rotationMultiplier;
 
     // Limit acceleration of the robot
     double accelerationX = (forward - currentForwardVel) / robotPeriod;

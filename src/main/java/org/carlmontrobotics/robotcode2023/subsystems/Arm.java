@@ -33,12 +33,12 @@ public class Arm extends SubsystemBase {
     private final CANSparkMax armMotor = MotorControllerFactory.createSparkMax(armMotorPort, MotorConfig.NEO);
     private final CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(wristMotorPort, MotorConfig.NEO);
     private final RelativeEncoder armRelEncoder = armMotor.getEncoder();
-    // private final RelativeEncoder armEncoder = armMotor.getEncoder();
-    // private final RelativeEncoder wristEncoder = wristMotor.getEncoder();
-    private final SparkMaxAbsoluteEncoder armEncoder = armMotor
-            .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
-    private final SparkMaxAbsoluteEncoder wristEncoder = wristMotor
-            .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+    private final RelativeEncoder armEncoder = armMotor.getEncoder();
+    private final RelativeEncoder wristEncoder = wristMotor.getEncoder();
+    // private final SparkMaxAbsoluteEncoder armEncoder = armMotor
+    //         .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+    // private final SparkMaxAbsoluteEncoder wristEncoder = wristMotor
+    //         .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
 
     private final SimpleMotorFeedforward armFeed = new SimpleMotorFeedforward(kS[ARM], kV[ARM], kA[ARM]);
     private ArmFeedforward wristFeed = new ArmFeedforward(kS[WRIST], kG[WRIST], kV[WRIST], kA[WRIST]);
@@ -334,14 +334,15 @@ public class Arm extends SubsystemBase {
     }
 
     public static boolean positionForbidden(double armPos, double wristPos) {
-        //return false;
-        Translation2d tip = getWristTipPosition(armPos, wristPos);
+        
+        return false;
+        // Translation2d tip = getWristTipPosition(armPos, wristPos);
 
-        boolean horizontal = tip.getX() < DT_TOTAL_WIDTH / 2 + DT_EXTENSION_FOR_ROLLER && tip.getX() > -DT_TOTAL_WIDTH / 2;
-        boolean vertical = tip.getY() > -ARM_JOINT_TOTAL_HEIGHT && tip.getY() < (-ARM_JOINT_TOTAL_HEIGHT + SAFE_HEIGHT);
-        boolean ground = tip.getY() < -ARM_JOINT_TOTAL_HEIGHT;
+        // boolean horizontal = tip.getX() < DT_TOTAL_WIDTH / 2 + DT_EXTENSION_FOR_ROLLER && tip.getX() > -DT_TOTAL_WIDTH / 2;
+        // boolean vertical = tip.getY() > -ARM_JOINT_TOTAL_HEIGHT && tip.getY() < (-ARM_JOINT_TOTAL_HEIGHT + SAFE_HEIGHT);
+        // boolean ground = tip.getY() < -ARM_JOINT_TOTAL_HEIGHT;
 
-        return horizontal && vertical || ground;
+        // return horizontal && vertical || ground;
     }
 
     public static boolean isWristOutsideRobot(double armPos, double wristPos) {

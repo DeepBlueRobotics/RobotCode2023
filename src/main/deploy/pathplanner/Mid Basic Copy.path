@@ -43,25 +43,25 @@
       "stopEvent": {
         "names": [
           "Cube Intake Pos.",
-          "Stop"
+          "PrintCube"
         ],
-        "executionBehavior": "parallelDeadline",
+        "executionBehavior": "sequential",
         "waitBehavior": "after",
         "waitTime": 0.0
       }
     },
     {
       "anchorPoint": {
-        "x": 4.999874626693129,
-        "y": 2.9216799778195433
+        "x": 5.450252186218659,
+        "y": 2.891578068870424
       },
       "prevControl": {
-        "x": 5.283940409443199,
-        "y": 3.0840032822481556
+        "x": 5.734317968968729,
+        "y": 3.0539013732990363
       },
       "nextControl": {
-        "x": 4.731918230403173,
-        "y": 2.7685620370824253
+        "x": 5.182295789928704,
+        "y": 2.738460128133306
       },
       "holonomicAngle": 0,
       "isReversal": false,
@@ -71,9 +71,9 @@
       "stopEvent": {
         "names": [
           "Stored Pos.",
-          "Stop"
+          "PrintStored"
         ],
-        "executionBehavior": "parallelDeadline",
+        "executionBehavior": "sequential",
         "waitBehavior": "none",
         "waitTime": 0.0
       }
@@ -95,7 +95,8 @@
       "isStopPoint": false,
       "stopEvent": {
         "names": [
-          "Auto-Align"
+          "Auto-Align",
+          "PrintAlign"
         ],
         "executionBehavior": "parallel",
         "waitBehavior": "none",

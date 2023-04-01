@@ -19,6 +19,7 @@ import org.carlmontrobotics.robotcode2023.Constants.Roller.RollerMode;
 import org.carlmontrobotics.robotcode2023.commands.AlignChargingStation;
 import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;
 import org.carlmontrobotics.robotcode2023.commands.HoldRoller;
+import org.carlmontrobotics.robotcode2023.commands.LoggingCommand;
 import org.carlmontrobotics.robotcode2023.commands.RotateToFieldRelativeAngle;
 import org.carlmontrobotics.robotcode2023.commands.RunRoller;
 import org.carlmontrobotics.robotcode2023.commands.SetArmWristGoalPreset;
@@ -80,7 +81,7 @@ public class RobotContainer {
 
     {
       eventMap.put("Cone High Pos.", new SetArmWristGoalPreset(GoalPos.HIGH, () -> false, () -> false, arm));
-      eventMap.put("Stored Pos.", new SetArmWristGoalPreset(GoalPos.STORED, () -> false, () -> false, arm));
+      eventMap.put("Stored Pos.", new SequentialCommandGroup(new PrintCommand("==============Store================="), new WaitCommand(2)));
       eventMap.put("Run Cube Intake", new SequentialCommandGroup(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm), new RunRoller(roller, RollerMode.INTAKE_CUBE, Constants.Roller.cubePickupColor)));
       eventMap.put("Cube High Pos.", new SetArmWristGoalPreset(GoalPos.HIGH, () -> true, () -> false, arm));
       eventMap.put("Run Cube Outtake", new RunRoller(roller, RollerMode.OUTTAKE_CUBE, Constants.Roller.defaultColor));
@@ -88,11 +89,12 @@ public class RobotContainer {
       eventMap.put("Run Cone Outtake", new RunRoller(roller, RollerMode.OUTTAKE_CONE, Constants.Roller.defaultColor));
       eventMap.put("Move Arm Back", new SetArmWristPositionV3((-5*Math.PI)/8, Constants.Arm.WRIST_STOW_POS_RAD, arm));
       eventMap.put("Cone Intake Pos.", new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, () -> false, arm));
-      eventMap.put("Cube Intake Pos.", new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm));
+      eventMap.put("Cube Intake Pos.", new SequentialCommandGroup(new PrintCommand("=============Cube Intake================="), new WaitCommand(2)));
       eventMap.put("Auto-Align", new ProxyCommand(() -> new AlignChargingStation(drivetrain)));
       eventMap.put("PrintAlign", new PrintCommand("=================================Aligning================================="));
       eventMap.put("PrintCube", new PrintCommand("=================================Cube================================="));
       eventMap.put("PrintStored", new PrintCommand("=================================Stored================================="));
+      eventMap.put("Stop", new LoggingCommand(new InstantCommand(drivetrain::stop).repeatedly()));
       eventMap.put("PrintOne", new PrintCommand("one"));
       eventMap.put("PrintTwo", new PrintCommand("two"));
       eventMap.put("PrintEnd", new PrintCommand("end"));
@@ -204,7 +206,7 @@ public class RobotContainer {
     //   midBasic.addCommands(commands[i]);
     //   //midBasic.addCommands(new WaitUntilCommand(() -> new JoystickButton(driverController, XboxController.Button.kA.value).getAsBoolean()));
     // }
-    PPRobotPath autoPath = new PPRobotPath("Mid Basic", drivetrain, false, new HashMap<>());
+    PPRobotPath autoPath = new PPRobotPath("TESTING", drivetrain, false, eventMap);
     // PPRobotPath autoPath = new PPRobotPath("Spit Cone", drivetrain, false, eventMap);
     // PPRobotPath autoPath = null;
     // for(int i = 0; i < autoSelectors.length; i++) {

@@ -204,13 +204,13 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
      * @param rotation The desired rotation speed, in rad/s. Counter clockwise is positive
      */
     public void drive(double forward, double strafe, double rotation) {
+        
         drive(getSwerveStates(forward, strafe, rotation));
     }
 
     @Override
     public void drive(SwerveModuleState[] moduleStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, maxSpeed);
-
         // Move the modules based on desired (normalized) speed, desired angle, max
         // speed, drive modifier, and whether or not to reverse turning.
         for (int i = 0; i < 4; i++) {

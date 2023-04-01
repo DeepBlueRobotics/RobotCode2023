@@ -24,8 +24,8 @@ public class LoggingCommand extends WrapperCommand {
     @Override
     public void execute() {
         super.execute();
-        SmartDashboard.putBoolean(m_command.getName() + " Is Scheduled", m_command.isScheduled());
-        SmartDashboard.putBoolean(m_command.getName() + " Is Finished", m_command.isFinished());
+        //SmartDashboard.putBoolean(m_command.getName() + " Is Scheduled", m_command.isScheduled());
+        //SmartDashboard.putBoolean(m_command.getName() + " Is Finished", m_command.isFinished());
         
     }
     
