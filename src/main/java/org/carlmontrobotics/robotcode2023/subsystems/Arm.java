@@ -10,6 +10,7 @@ import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -20,6 +21,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,7 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // Arm angle is measured from horizontal on the intake side of the robot and bounded between -3π/2 and π/2
 // Wrist angle is measured relative to the arm with 0 being parallel to the arm and bounded between -π and π (Center of Mass of Roller)
 public class Arm extends SubsystemBase {
-
+    // a boolean meant to tell if the arm is in a forbidden posistion AKA FORBIDDEN FLAG
+    private static boolean forbFlag;
     private final CANSparkMax armMotor = MotorControllerFactory.createSparkMax(armMotorPort, MotorConfig.NEO);
     private final CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(wristMotorPort, MotorConfig.NEO);
     private final RelativeEncoder armRelEncoder = armMotor.getEncoder();
@@ -52,17 +55,22 @@ public class Arm extends SubsystemBase {
     public static TrapezoidProfile.State[] goalState = { new TrapezoidProfile.State(-Math.PI / 2, 0), new TrapezoidProfile.State(0, 0) };
 
     public Arm() {
-        armMotor.setInverted(inverted[ARM]);
-        wristMotor.setInverted(inverted[WRIST]);
+        armMotor.setInverted(motorInverted[ARM]);
+        wristMotor.setInverted(motorInverted[WRIST]);
+        armMotor.setIdleMode(IdleMode.kBrake);
+
+        wristMotor.setIdleMode(IdleMode.kBrake);
 
         armEncoder.setPositionConversionFactor(rotationToRad);
         wristEncoder.setPositionConversionFactor(rotationToRad);
         armEncoder.setVelocityConversionFactor(rotationToRad);
         wristEncoder.setVelocityConversionFactor(rotationToRad);
+        armEncoder.setInverted(encoderInverted[ARM]);
+        wristEncoder.setInverted(encoderInverted[WRIST]);
 
         armEncoder.setZeroOffset(offsetRad[ARM]);
         wristEncoder.setZeroOffset(offsetRad[WRIST]);
-
+        //wristEncoder.setZeroOffset(0);
         armPID.setTolerance(posToleranceRad[ARM], velToleranceRadPSec[ARM]);
         wristPID.setTolerance(posToleranceRad[WRIST], velToleranceRadPSec[WRIST]);
 
@@ -75,8 +83,8 @@ public class Arm extends SubsystemBase {
         setWristTarget(goalState[WRIST].position, 0);
         wristMotor.setSmartCurrentLimit(WRIST_CURRENT_LIMIT_AMP);
 
-        SmartDashboard.putNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
-        SmartDashboard.putNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
+        // SmartDashboard.putNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
+        // SmartDashboard.putNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
         SmartDashboard.putNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
         SmartDashboard.putNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
         SmartDashboard.putNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
@@ -87,12 +95,14 @@ public class Arm extends SubsystemBase {
     @Override
     public void periodic() {
 
+        if(DriverStation.isDisabled()) resetGoal();
+
         // TODO: REMOVE THIS WHEN PID CONSTANTS ARE DONE
-        MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
-        MAX_FF_VEL[WRIST] = SmartDashboard.getNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
+        // MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
+        // MAX_FF_VEL[WRIST] = SmartDashboard.getNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
         ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = SmartDashboard.getNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
-        wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[WRIST], MAX_FF_ACCEL[WRIST]);
-        armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[ARM], MAX_FF_ACCEL[ARM]);
+        // wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[WRIST], MAX_FF_ACCEL[WRIST]);
+        // armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[ARM], MAX_FF_ACCEL[ARM]);
         armPID.setP(kP[ARM]);
         armPID.setI(kI[ARM]);
         armPID.setD(kD[ARM]);
@@ -125,6 +135,8 @@ public class Arm extends SubsystemBase {
     }
 
     public void autoCancelArmCommand() {
+        if(!(getDefaultCommand() instanceof ArmTeleop) || DriverStation.isAutonomous()) return;
+
         double[] requestedSpeeds = ((ArmTeleop) getDefaultCommand()).getRequestedSpeeds();
 
         if(requestedSpeeds[0] != 0 || requestedSpeeds[1] != 0) {
@@ -143,8 +155,11 @@ public class Arm extends SubsystemBase {
         double armPIDVolts = armPID.calculate(getArmPos(), state.position);
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
+              forbFlag = true;  
             armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(0, 0);
         }
+       
+        
         // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
         // TO MASTER IF THIS IS STILL HERE)
         SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
@@ -160,8 +175,10 @@ public class Arm extends SubsystemBase {
         double wristPIDVolts = wristPID.calculate(getWristPos(), state.position);
         if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getWristPos() < WRIST_LOWER_LIMIT_RAD && state.velocity < 0)) {
+            forbFlag = true;
             wristFeedVolts = kgv;
         }
+       
         // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
         // TO MASTER IF THIS IS STILL HERE)
         SmartDashboard.putNumber("WristFeedVolts", wristFeedVolts);
@@ -174,7 +191,12 @@ public class Arm extends SubsystemBase {
     public void setArmTarget(double targetPos, double targetVel) {
         targetPos = getArmClampedGoal(targetPos);
 
-        if(positionForbidden(targetPos, getWristPos())) return;
+        if(positionForbidden(targetPos, getWristPos())) 
+        {
+             forbFlag = true;
+            return;
+        } 
+      
 
         armProfile = new TrapezoidProfile(armConstraints, new TrapezoidProfile.State(targetPos, targetVel), armProfile.calculate(armProfileTimer.get()));
         armProfileTimer.reset();
@@ -186,8 +208,11 @@ public class Arm extends SubsystemBase {
     public void setWristTarget(double targetPos, double targetVel) {
         targetPos = getWristClampedGoal(targetPos);
 
-        if(wristMovementForbidden(getArmPos(), targetPos, targetPos - getWristPos())) return;
-
+        if(wristMovementForbidden(getArmPos(), targetPos, targetPos - getWristPos())) 
+        {
+            forbFlag = true;
+            return;
+        }
         wristProfile = new TrapezoidProfile(wristConstraints, new TrapezoidProfile.State(targetPos, targetVel), wristProfile.calculate(wristProfileTimer.get()));
         wristProfileTimer.reset();
 
@@ -196,10 +221,12 @@ public class Arm extends SubsystemBase {
     }
 
     public void resetGoal() {
-        setArmTarget(getArmPos(), 0);
-        setWristTarget(getWristPos(), 0);
-        armProfile = new TrapezoidProfile(armConstraints, new TrapezoidProfile.State(getArmPos(), 0), new TrapezoidProfile.State(getArmPos(), 0));
-        wristProfile = new TrapezoidProfile(wristConstraints, new TrapezoidProfile.State(getWristPos(), 0), new TrapezoidProfile.State(getWristPos(), 0));
+        double armPos = getArmPos();
+        double wristPos = getWristPos();
+        goalState[ARM] = new TrapezoidProfile.State(armPos, 0);
+        goalState[WRIST] = new TrapezoidProfile.State(wristPos, 0);
+        armProfile = new TrapezoidProfile(armConstraints, goalState[ARM], goalState[ARM]);
+        wristProfile = new TrapezoidProfile(wristConstraints, goalState[WRIST], goalState[WRIST]);
     }
 
     //#endregion
@@ -306,8 +333,9 @@ public class Arm extends SubsystemBase {
 
     public boolean wristMovementForbidden(double armPos, double wristPos, double wristVelSign) {
         // If the position is not forbidden, then the movement is not forbidden
-        if(!positionForbidden(armPos, wristPos)) return false;
-
+        
+        if (true)
+            return false;
         Translation2d tip = getWristTipPosition(armPos, wristPos);
 
         // Copied from positionForbidden
@@ -319,21 +347,43 @@ public class Arm extends SubsystemBase {
             return Math.signum(getWristPos() + ROLLER_COM_CORRECTION_RAD) != Math.signum(wristVelSign);
         }
 
+        
+
         // Otherwise, fold away from vertical
         double tipAngle = MathUtil.inputModulus(armPos + wristPos + ROLLER_COM_CORRECTION_RAD, -3 * Math.PI / 2, Math.PI / 2);
         return Math.signum(tipAngle + Math.PI / 2) != Math.signum(wristVelSign);
     }
+   
+    public boolean getForbFlag()
+    {
+        boolean output = forbFlag;
+        forbFlag = false;//default: if it wasn't set to true, it's false
+        return output;
+    }
+   
 
     public static boolean positionForbidden(double armPos, double wristPos) {
-
+        if (true)
+            return false;
         Translation2d tip = getWristTipPosition(armPos, wristPos);
 
         boolean horizontal = tip.getX() < DT_TOTAL_WIDTH / 2 + DT_EXTENSION_FOR_ROLLER && tip.getX() > -DT_TOTAL_WIDTH / 2;
         boolean vertical = tip.getY() > -ARM_JOINT_TOTAL_HEIGHT && tip.getY() < (-ARM_JOINT_TOTAL_HEIGHT + SAFE_HEIGHT);
         boolean ground = tip.getY() < -ARM_JOINT_TOTAL_HEIGHT;
 
-        //return horizontal && vertical || ground;
-        return false;
+        return horizontal && vertical || ground;
+    }
+
+    public static boolean isWristOutsideRobot(double armPos, double wristPos) {
+        Translation2d wristTip = Arm.getWristTipPosition(armPos, wristPos);
+        double driveTrainHalfLen = Units.inchesToMeters(31)/2;
+
+        return Math.abs(wristTip.getX())>driveTrainHalfLen;
+        //returns true if wristTip is outside of robot vertical bounds.
+    }
+
+    public static boolean canSafelyMoveWrist(double armPos) {
+        return Math.abs(armPos - ARM_VERTICAL_POS_RAD) >= MIN_WRIST_FOLD_POS_RAD;
     }
 
     //#endregion
@@ -355,9 +405,11 @@ public class Arm extends SubsystemBase {
         builder.addDoubleProperty("kD: Arm", () -> kD[ARM], x -> kD[ARM] = x);
         builder.addDoubleProperty("kD: Wis", () -> kD[WRIST], x -> kD[WRIST] = x);
         //arm control
-        builder.addDoubleProperty("Max FF Vel Arm", () -> MAX_FF_VEL[ARM],     x -> MAX_FF_VEL[ARM] = x);
+        builder.addDoubleProperty("Max Manual FF Vel Arm", () -> MAX_FF_VEL_MANUAL[ARM],     x -> MAX_FF_VEL_MANUAL[ARM] = x);
+        builder.addDoubleProperty("Max Auto FF Vel Arm", () -> MAX_FF_VEL_AUTO[ARM],     x -> MAX_FF_VEL_AUTO[ARM] = x);
         builder.addDoubleProperty("Max FF Acc Arm", () -> MAX_FF_ACCEL[ARM],   x -> MAX_FF_ACCEL[ARM] = x);
-        builder.addDoubleProperty("Max FF Vel Wis", () -> MAX_FF_VEL[WRIST],   x -> MAX_FF_VEL[WRIST] = x);
+        builder.addDoubleProperty("Max Manual FF Vel Wis", () -> MAX_FF_VEL_MANUAL[WRIST],     x -> MAX_FF_VEL_MANUAL[WRIST] = x);
+        builder.addDoubleProperty("Max Auto FF Vel Wis", () -> MAX_FF_VEL_AUTO[WRIST],     x -> MAX_FF_VEL_AUTO[WRIST] = x);
         builder.addDoubleProperty("Max FF Acc Wis", () -> MAX_FF_ACCEL[WRIST], x -> MAX_FF_ACCEL[WRIST] = x);
         //arm positions
         builder.addDoubleProperty("Arm.Back.High.Cone",  () -> GoalPos.HIGH[BACK][CONE].armPos,       x -> GoalPos.HIGH[BACK][CONE].armPos = x);
@@ -467,14 +519,14 @@ public class Arm extends SubsystemBase {
         SmartDashboard.putNumber("kD: Arm", kD[ARM]);
         SmartDashboard.putNumber("WristGoalDeg", Units.radiansToDegrees(goalState[WRIST].position));
         SmartDashboard.putNumber("ArmGoalDeg", Units.radiansToDegrees(goalState[ARM].position));
-        SmartDashboard.putNumber("Max FF Vel Arm", MAX_FF_VEL[ARM]);
+        // SmartDashboard.putNumber("Max FF Vel Arm", MAX_FF_VEL[ARM]);
         SmartDashboard.putNumber("Max FF Accel Arm", MAX_FF_ACCEL[ARM]);
     }
 
     public void getArmControlOnSmartDashboard() {
         goalState[WRIST].position = Units.degreesToRadians(SmartDashboard.getNumber("WristGoalDeg", Units.radiansToDegrees(goalState[WRIST].position)));
         goalState[ARM].position = Units.degreesToRadians(SmartDashboard.getNumber("ArmGoalDeg", Units.radiansToDegrees(goalState[ARM].position)));
-        MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Max FF Vel Arm", MAX_FF_VEL[ARM]);
+        // MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Max FF Vel Arm", MAX_FF_VEL[ARM]);
         MAX_FF_ACCEL[ARM] = SmartDashboard.getNumber("Max FF Accel Arm", MAX_FF_ACCEL[ARM]);
         kP[WRIST] = SmartDashboard.getNumber("kP: Wis", kP[WRIST]);
         kI[WRIST] = SmartDashboard.getNumber("kI: Wis", kI[WRIST]);

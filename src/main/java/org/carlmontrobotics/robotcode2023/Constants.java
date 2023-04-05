@@ -50,6 +50,8 @@ public final class Constants {
         public static final double maxSpeed = NEOFreeSpeed * (wheelDiameterMeters / 2.0) / driveGearing;
         public static final double maxForward = maxSpeed;
         public static final double maxStrafe = maxSpeed;
+        
+        
         // maxRCW is the angular velocity of the robot.
         // Calculated by looking at one of the motors and treating it as a point mass moving around in a circle.
         // Tangential speed of this point mass is maxSpeed and the radius of the circle is sqrt((wheelBase/2)^2 + (trackWidth/2)^2)
@@ -134,9 +136,9 @@ public final class Constants {
         //#region Command Constants
 
         public static final double kNormalDriveSpeed = 1; // Percent Multiplier
-        public static final double kNormalDriveRotation = 0.55; // Percent Multiplier
-        public static final double kSlowDriveSpeed = 0.25; // Percent Multiplier
-        public static final double kSlowDriveRotation = 0.30; // Percent Multiplier
+        public static final double kNormalDriveRotation = 0.5; // Percent Multiplier
+        public static final double kSlowDriveSpeed = 0.4; // Percent Multiplier
+        public static final double kSlowDriveRotation = 0.250; // Percent Multiplier
         public static final double kAlignMultiplier = 1D/3D;
         public static final double kAlignForward = 0.6;
 
@@ -169,35 +171,36 @@ public final class Constants {
 
         // Feedforward
         // Arm, Wrist
-        public static final double[] kS = {0.20642, .074798};
-        public static final double[] kG = {0.6697, 0.36214};
-        public static final double[] kV = {4.3735, 1.6743};
-        public static final double[] kA = {0.24914, 0.032177};
-        public static final double kG_WRIST = .36214; // (V)
+        public static final double[] kS = {0.20642, .084199};
+        public static final double[] kG = {0.6697, 0.34116};
+        public static final double[] kV = {4.3735, 2.008};
+        public static final double[] kA = {0.24914, 0.041502};
+        public static final double kG_WRIST = 0.34116; // (V)
 
         // PID
-        // FIXME BOTH WRIST AND ARM NEED TO TEST PID (Wrist PID never tested)
         // Arm, Wrist
-        public static double[] kP = {4.2736, 6}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
+        public static double[] kP = {4.2736, 4.8804}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
         public static double[] kI = {0, 0}; // (V / (rad * s) )
-        public static double[] kD = {0, 0}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
+        public static double[] kD = {0, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
 
         // Arm, Wrist
-        public static double[] posToleranceRad = { .1, .05 }; // rad
-        public static double[] velToleranceRadPSec = { 0.5, 0.5 }; // rad/s
+        public static double[] posToleranceRad = { .07, .05 }; // rad
+        public static double[] velToleranceRadPSec = { 1, 0.5 }; // rad/s
 
-        public static double[] offsetRad = { 4.02, -0.7 + Math.PI / 2 }; // rad
+        public static double[] offsetRad = { 0.865, 2.93 + Math.PI / 2 }; // rad
+        public static final double rumbleFullPower = 1;
+        public static final double rumbleNoPower = 0;
 
         // needed to calculate feedforward values dynamically
-        public static final double ARM_MASS_KG = Units.lbsToKilograms(8.1);
+        public static final double ARM_MASS_KG = Units.lbsToKilograms(6.841);
         public static final double ARM_LENGTH_METERS = Units.inchesToMeters(38.25);
 
         // Distance from the arm motor to the center of mass of the  arm
-        public static final double COM_ARM_LENGTH_METERS = Units.inchesToMeters(13.23);
-        public static final double ROLLER_MASS_KG = Units.lbsToKilograms(14.04);
+        public static final double COM_ARM_LENGTH_METERS = Units.inchesToMeters(14.23);
+        public static final double ROLLER_MASS_KG = Units.lbsToKilograms(15);
 
         // distance of center of mass of roller to the WRIST motor
-        public static final double COM_ROLLER_LENGTH_METERS = Units.inchesToMeters(9.47);
+        public static final double COM_ROLLER_LENGTH_METERS = Units.inchesToMeters(7.86);
         public static final double ROLLER_LENGTH_METERS = Units.inchesToMeters(19.14);
         public static final double g = 9.81;
 
@@ -219,16 +222,18 @@ public final class Constants {
 
         // TODO: Determine actual max vel/accel
         // public static double[] MAX_FF_VEL = {.25, .25}; // rad / s
-        public static double[] MAX_FF_VEL = {1, 3}; // rad / s
-        public static double[] MAX_FF_ACCEL = {1, 1}; // rad / s^2
-        public static TrapezoidProfile.Constraints armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[ARM], MAX_FF_ACCEL[ARM]);
-        public static TrapezoidProfile.Constraints wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[WRIST], MAX_FF_ACCEL[WRIST]);
+        public static double[] MAX_FF_VEL_MANUAL = {1, 3}; // rad / s
+        public static double[] MAX_FF_VEL_AUTO = {1.25, 5}; // rad / s
+        public static double[] MAX_FF_ACCEL = {5, 5}; // rad / s^2
+        public static TrapezoidProfile.Constraints armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL_AUTO[ARM], MAX_FF_ACCEL[ARM]);
+        public static TrapezoidProfile.Constraints wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL_AUTO[WRIST], MAX_FF_ACCEL[WRIST]);
 
         //#endregion
 
         //#region Ports
 
-        public static final boolean[] inverted = { true, false };
+        public static final boolean[] motorInverted = { true, false };
+        public static final boolean[] encoderInverted = { false, true };
         public static final double rotationToRad = 2 * Math.PI;
 
         public static final int armMotorPort = 17;
@@ -243,7 +248,7 @@ public final class Constants {
         public static final double ARM_VERTICAL_POS_RAD = -Math.PI / 2;
         public static final double MIN_WRIST_FOLD_POS_RAD = Units.degreesToRadians(70);
         public static final int WRIST_CURRENT_LIMIT_AMP = 15;
-        public static final double ROLLER_COM_CORRECTION_RAD = Units.degreesToRadians(14.48);
+        public static final double ROLLER_COM_CORRECTION_RAD = Units.degreesToRadians(18.3);
         public static double ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = .5;
         public static final Translation2d ARM_JOINT_POS = new Translation2d(0, 1.184);
 
@@ -303,27 +308,27 @@ public final class Constants {
         };
         public static GoalPos[][] SHELF = {
             {
-                new GoalPos(Units.degreesToRadians(-90), 0),
-                new GoalPos(0, 0)
+                new GoalPos(0.224062, -0.800449),
+                new GoalPos(0.224062, -0.800449)
             },
             {
-                new GoalPos(Units.degreesToRadians(-90), 0),
-                new GoalPos(0, 0)
+                new GoalPos(0.224062, -0.800449),
+                new GoalPos(0.224062, -0.800449)
             }
         };
         public static GoalPos[][] SUBSTATION = {
             {
-                new GoalPos(Units.degreesToRadians(-90), 0),
-                new GoalPos(0, 0)
+                new GoalPos(-1.459526, 2.417944),
+                new GoalPos(-1.459526, 2.417944)
             },
             {
-                new GoalPos(Units.degreesToRadians(-90), 0),
-                new GoalPos(0, 0)
+                new GoalPos(-1.459526, 2.417944),
+                new GoalPos(-1.459526, 2.417944)
             }
         };
         public static GoalPos[][] INTAKE = {
             {
-                new GoalPos(-1.271106, 1.303141),
+                new GoalPos(-1.29, 1.32),
                 new GoalPos(-1.208155, 0.646987)
             },
             {
@@ -355,6 +360,11 @@ public final class Constants {
         public static final double distSensorDepthMM = 16;
         public static final double gamePieceDetectDistanceIn = 21;
 
+        public static final double rollerToleranceRad = 1 / 20 * 2 * Math.PI;
+        public static final double rollerHoldSpeedPercent = .3;
+
+        public static final int ROLLER_MAX_CURRENT_AMPS = 20;
+
         //#endregion
 
         //#region Ports
@@ -367,12 +377,16 @@ public final class Constants {
         //#region Command Constants
         // TODO: Determine actual speeds/timings for roller
         public static class RollerMode {
-            public static RollerMode INTAKE_CONE = new RollerMode(-0.5, .5, true);
-            public static RollerMode INTAKE_CUBE = new RollerMode(0.3, .25, true);
-            public static RollerMode OUTTAKE_CONE = new RollerMode(0.5, .5, false);
-            public static RollerMode OUTTAKE_CUBE = new RollerMode(-0.5, .5, false);
+            public static RollerMode INTAKE_CONE = new RollerMode(-0.5, .5, GameObject.CONE, conePickupColor);
+            public static RollerMode INTAKE_CUBE = new RollerMode(0.4, .25, GameObject.CUBE, cubePickupColor);
+            // The obj indicates which game object the roller is trying to intake
+            // if obj == NONE, that means it is trying to outtake rather than intake
+            public static RollerMode OUTTAKE_CONE = new RollerMode(0.5, .5, GameObject.NONE, defaultColor);
+            public static RollerMode OUTTAKE_CUBE = new RollerMode(-0.5, .5, GameObject.NONE, defaultColor);
+            public static RollerMode STOP = new RollerMode(0, .1, GameObject.NONE, defaultColor);
             public double speed, time;
-            public boolean intake;
+            public GameObject obj;
+            public Color ledColor;
     
             /**
              * @param speed  A number between -1 and 1
@@ -380,14 +394,19 @@ public final class Constants {
              *               distance sensor has detected an object
              * @param intake Whether the roller is outtaking or intaking
              */
-            public RollerMode(double speed, double time, boolean intake) {
+            public RollerMode(double speed, double time, GameObject obj, Color ledColor) {
                 this.speed = speed;
                 this.time = time;
-                this.intake = intake;
+                this.obj = obj;
+                this.ledColor = ledColor;
             }
         }
 
         //#endregion
+
+        public static enum GameObject {
+            CUBE, CONE, NONE
+        }
     }
 
     public static final class OI {
@@ -402,7 +421,6 @@ public final class Constants {
             public static final int chargeStationAlignButton = Button.kBack.value;
             public static final int resetFieldOrientationButton = Button.kRightBumper.value;
             public static final int toggleFieldOrientedButton = Button.kStart.value;
-
             public static final int rotateToFieldRelativeAngle0Deg = Button.kY.value;
             public static final int rotateToFieldRelativeAngle90Deg = Button.kB.value;
             public static final int rotateToFieldRelativeAngle180Deg = Button.kA.value;

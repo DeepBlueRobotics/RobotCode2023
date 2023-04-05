@@ -4,10 +4,10 @@
 
 package org.carlmontrobotics.robotcode2023;
 
+import com.pathplanner.lib.server.PathPlannerServer;
+
 import org.carlmontrobotics.lib199.MotorErrors;
 import org.carlmontrobotics.lib199.sim.MockedSparkEncoder;
-
-import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -65,9 +65,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    CommandScheduler.getInstance().cancelAll();
     robotContainer.drivetrain.brake();
     robotContainer.getAutonomousCommand().schedule();
-    robotContainer.arm.resetGoal();
   }
 
   @Override
@@ -79,7 +79,6 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     CommandScheduler.getInstance().cancelAll();
-    robotContainer.arm.resetGoal();
     robotContainer.drivetrain.brake();
   }
 

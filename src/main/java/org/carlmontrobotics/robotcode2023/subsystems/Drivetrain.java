@@ -6,12 +6,15 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 
 import org.carlmontrobotics.MotorConfig;
+import com.kauailabs.navx.frc.AHRS;
+
 import org.carlmontrobotics.lib199.Limelight;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
 import org.carlmontrobotics.lib199.path.SwerveDriveInterface;
 import org.carlmontrobotics.lib199.swerve.SwerveModule;
+import org.carlmontrobotics.robotcode2023.commands.RotateToFieldRelativeAngle;
+import org.carlmontrobotics.robotcode2023.commands.TeleopDrive;
 
-import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -22,11 +25,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
@@ -39,12 +45,13 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
     private boolean fieldOriented = true;
     private double fieldOffset = 0;
 
+    
+
     public final float initPitch;
     public final float initRoll;
 
     public Drivetrain(Limelight lime) {
         this.lime = lime;
-
         // Calibrate Gyro
         {
             gyro.calibrate();
@@ -120,6 +127,7 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
             for(CANSparkMax driveMotor : driveMotors) driveMotor.setSmartCurrentLimit(80);
         }
 
+        
         SmartDashboard.putNumber("kpTheta", thetaPIDController[0]);
         odometry = new SwerveDrivePoseEstimator(kinematics, Rotation2d.fromDegrees(getHeading()), getModulePositions(), new Pose2d());
     }
@@ -133,19 +141,22 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
         // Update the odometry with limelight
         if(lime != null && lime.hasTarget()) {
+            Pose2d targetPose = lime.getTransform(Limelight.Transform.TARGETPOSE_CAMERASPACE).toPose2d();
             Pose2d visionPose = lime.getTransform(limelightTransformForPoseEstimation).toPose2d();
-            if(visionPose.getTranslation().getDistance(odometry.getEstimatedPosition().getTranslation()) <= 1) {
+            if(visionPose.getTranslation().getDistance(odometry.getEstimatedPosition().getTranslation()) <= 1 && targetPose.getTranslation().getNorm() <= Units.feetToMeters(7.5)) {
                 odometry.addVisionMeasurement(
                     visionPose,
                     Timer.getFPGATimestamp() - lime.getNTEntry(limelightTransformForPoseEstimation.name().toLowerCase()).getDoubleArray(new double[7])[6] / 1000);
             }
         }
 
+        autoCancelDtCommand();
+
         SmartDashboard.putNumber("Odometry X", getPose().getTranslation().getX());
         SmartDashboard.putNumber("Odometry Y", getPose().getTranslation().getY());;
         // SmartDashboard.putNumber("Pitch", gyro.getPitch());
         // SmartDashboard.putNumber("Roll", gyro.getRoll());
-       // SmartDashboard.putNumber("Raw gyro angle", gyro.getAngle());
+       SmartDashboard.putNumber("Raw gyro angle", gyro.getAngle());
         SmartDashboard.putNumber("Robot Heading", getHeading());
         // SmartDashboard.putNumber("AdjRoll", gyro.getPitch() - initPitch);
         // SmartDashboard.putNumber("AdjPitch", gyro.getRoll() - initRoll);
@@ -154,6 +165,18 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         // SmartDashboard.putNumber("Compass Offset", compassOffset);
         // SmartDashboard.putBoolean("Current Magnetic Field Disturbance",
         // gyro.isMagneticDisturbance());
+    }
+
+    public void autoCancelDtCommand() {
+        if(!(getDefaultCommand() instanceof TeleopDrive) || DriverStation.isAutonomous()) return;
+
+        // Use hasDriverInput to get around acceleration limiting on slowdown
+        if(((TeleopDrive) getDefaultCommand()).hasDriverInput()) {
+            Command currentDtCommand = getCurrentCommand();
+            if(currentDtCommand != getDefaultCommand() && !(currentDtCommand instanceof RotateToFieldRelativeAngle) && currentDtCommand != null) {
+                currentDtCommand.cancel();
+            }
+        }
     }
 
     @Override

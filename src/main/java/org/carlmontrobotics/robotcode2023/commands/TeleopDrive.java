@@ -138,6 +138,8 @@ public class TeleopDrive extends CommandBase {
     Translation2d com = getCoM();
 
     return Math.sqrt(wheelBase / com.getY());
+  public boolean hasDriverInput() {
+    return Math.abs(fwd.getAsDouble()) > Constants.OI.JOY_THRESH || Math.abs(str.getAsDouble()) > Constants.OI.JOY_THRESH || Math.abs(rcw.getAsDouble()) > Constants.OI.JOY_THRESH;
   }
 
   // Called once the command ends or is interrupted.

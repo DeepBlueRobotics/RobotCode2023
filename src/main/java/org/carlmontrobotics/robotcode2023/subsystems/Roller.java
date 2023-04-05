@@ -16,6 +16,7 @@ import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -42,17 +43,15 @@ public class Roller extends SubsystemBase {
     public Roller() {
         led.setLength(ledBuffer.getLength());
         setLedColor(defaultColor);
-        //SmartDashboard.putData(this);
-
-        // TODO: Get proper values for the speeds and timings. For future pull requests,
-        // do not merge if this is not deleted or speeds/timings have not been determined
-        
+        motor.setSmartCurrentLimit(ROLLER_MAX_CURRENT_AMPS);
         led.start();
     }
 
     @Override
     public void periodic() {
-
+        if (DriverStation.isDisabled())
+            setSpeed(0);
+            
         SmartDashboard.putBoolean("Has Game Piece", hasGamePiece());
         SmartDashboard.putNumber("Roller Game Piece Distance", getGamePieceDistanceIn());
 
@@ -89,6 +88,11 @@ public class Roller extends SubsystemBase {
                                                                                 */) / 1000 /* Convert mm to m */);
     }
 
+    public void setRollerMode(RollerMode mode) {
+        setSpeed(mode.speed);
+        setLedColor(mode.ledColor);
+    }
+
     public void putRollerConstsOnSmartDashboard() {
         SmartDashboard.putNumber("Intake Cone Speed", RollerMode.INTAKE_CONE.speed);
         SmartDashboard.putNumber("Outtake Cone Speed", RollerMode.OUTTAKE_CONE.speed);
@@ -110,4 +114,9 @@ public class Roller extends SubsystemBase {
         RollerMode.INTAKE_CUBE.time = SmartDashboard.getNumber("Intake Cube Time", RollerMode.INTAKE_CUBE.time);
         RollerMode.OUTTAKE_CUBE.time = SmartDashboard.getNumber("Outtake Cube Time", RollerMode.OUTTAKE_CUBE.time);
     }
+
+    public double getPosition() {
+        return motor.getEncoder().getPosition();
+    }
+
 }
