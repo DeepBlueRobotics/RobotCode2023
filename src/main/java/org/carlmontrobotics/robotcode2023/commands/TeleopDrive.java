@@ -85,6 +85,9 @@ public class TeleopDrive extends CommandBase {
     double maxYAccel = getStrafeAccelLimit();
     if(Math.abs(accelerationY) > maxYAccel) accelerationY = Math.copySign(maxYAccel, accelerationY);
 
+    currentForwardVel += accelerationX * robotPeriod;
+    currentStrafeVel += accelerationY * robotPeriod;
+
     // double translationalAcceleration = Math.hypot(accelerationX, accelerationY);
     // if(translationalAcceleration > autoMaxAccelMps2) {
     //   Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2, Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
