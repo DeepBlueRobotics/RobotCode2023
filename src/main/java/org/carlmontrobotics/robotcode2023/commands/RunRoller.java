@@ -23,7 +23,7 @@ public class RunRoller extends CommandBase {
     public void initialize() {
         System.err.println("=============================RunRoller is Started=============================");
 
-        if (mode.speed > 0) { // should not interrupt command to stop rollers
+        if (mode.getSpeed() > 0) { // should not interrupt command to stop rollers
             if(roller.hasGamePiece() && isIntake()) cancel();
             if(!roller.hasGamePiece() && !isIntake()) cancel(); 
         }
@@ -48,7 +48,7 @@ public class RunRoller extends CommandBase {
     @Override
     public boolean isFinished() {
 
-        if(mode.speed == 0) return true;
+        if(mode.getSpeed() == 0) return true;
 
         double time = timer.get();
 

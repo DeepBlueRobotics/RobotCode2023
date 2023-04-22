@@ -51,6 +51,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   
+  public static boolean isdriverchild = false;
+
   public final GenericHID driverController = new GenericHID(Driver.port);
   public final GenericHID manipulatorController = new GenericHID(Manipulator.port);
 
@@ -132,7 +134,7 @@ public class RobotContainer {
       () -> inputProcessing(getStickValue(driverController, Axis.kLeftY)),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
       () -> inputProcessing(getStickValue(driverController, Axis.kLeftX)),
       () -> inputProcessing(getStickValue(driverController, Axis.kRightX)),
-      () -> driverController.getRawButton(Driver.slowDriveButton)
+      () -> driverController.getRawButton(Driver.slowDriveButton) || isdriverchild
     ));
 
     configureButtonBindingsDriver();

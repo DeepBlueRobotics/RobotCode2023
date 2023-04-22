@@ -383,7 +383,8 @@ public final class Constants {
             public static RollerMode OUTTAKE_CONE = new RollerMode(0.5, .5, GameObject.NONE, defaultColor);
             public static RollerMode OUTTAKE_CUBE = new RollerMode(-0.5, .5, GameObject.NONE, defaultColor);
             public static RollerMode STOP = new RollerMode(0, .1, GameObject.NONE, defaultColor);
-            public double speed, time;
+            private double speed;
+            public double time;
             public GameObject obj;
             public Color ledColor;
     
@@ -398,6 +399,14 @@ public final class Constants {
                 this.time = time;
                 this.obj = obj;
                 this.ledColor = ledColor;
+            }
+
+            public double getSpeed() {
+                return RobotContainer.isdriverchild ? speed * 0.2 : speed;
+            }
+
+            public void setSpeed(double speed) {
+                this.speed = speed;
             }
         }
 
