@@ -141,8 +141,8 @@ public class RobotContainer {
     configureButtonBindingsManipulator();
     arm.setDefaultCommand(new ArmTeleop(
       arm,
-      () -> inputProcessing(getStickValue(manipulatorController, Axis.kLeftY)),
-      () -> inputProcessing(getStickValue(manipulatorController, Axis.kRightY))
+      () -> {return isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY));},
+      () -> {return isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY));}
     ));
   }
   private void configureButtonBindingsDriver() {
