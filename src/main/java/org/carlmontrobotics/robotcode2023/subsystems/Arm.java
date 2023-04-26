@@ -31,6 +31,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Arm extends SubsystemBase {
     // a boolean meant to tell if the arm is in a forbidden posistion AKA FORBIDDEN FLAG
     private static boolean forbFlag;
+    private boolean driveArmForb;
+    private boolean driveWristForb;
+    private boolean targetArmForb;
+    private boolean targetWristForb;
     private final CANSparkMax armMotor = MotorControllerFactory.createSparkMax(armMotorPort, MotorConfig.NEO);
     private final CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(wristMotorPort, MotorConfig.NEO);
     private final RelativeEncoder armRelEncoder = armMotor.getEncoder();
@@ -54,8 +58,11 @@ public class Arm extends SubsystemBase {
     public static TrapezoidProfile.State[] goalState = { new TrapezoidProfile.State(-Math.PI / 2, 0), new TrapezoidProfile.State(0, 0) };
 
     public Arm() {
-        armMotor.setInverted(inverted[ARM]);
-        wristMotor.setInverted(inverted[WRIST]);
+
+       boolean[] invertedArray = new boolean[] {false,true,};
+
+        armMotor.setInverted(inverted [ARM]);
+        wristMotor.setInverted(inverted [WRIST]);
 
         armEncoder.setPositionConversionFactor(rotationToRad);
         wristEncoder.setPositionConversionFactor(rotationToRad);
@@ -149,11 +156,17 @@ public class Arm extends SubsystemBase {
         double armPIDVolts = armPID.calculate(getArmPos(), state.position);
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
-              forbFlag = true;  
+              forbFlag = true;
+              driveArmForb = true;
             armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(0, 0);
+            
         }
-       
-        
+         else if (driveWristForb == false || targetArmForb == false || targetWristForb == false)
+         {
+            forbFlag = false;
+            driveArmForb = false;
+         }
+
         // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
         // TO MASTER IF THIS IS STILL HERE)
         SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
@@ -167,12 +180,17 @@ public class Arm extends SubsystemBase {
         double kgv = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
         double wristFeedVolts = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
         double wristPIDVolts = wristPID.calculate(getWristPos(), state.position);
-        if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) || 
+        if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) ||
             (getWristPos() < WRIST_LOWER_LIMIT_RAD && state.velocity < 0)) {
             forbFlag = true;
+            driveWristForb = true;
             wristFeedVolts = kgv;
         }
-       
+        else if (driveArmForb == false|| targetArmForb == false || targetWristForb == false)
+         {
+            forbFlag = false;
+            driveWristForb = false;
+         }
         // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
         // TO MASTER IF THIS IS STILL HERE)
         SmartDashboard.putNumber("WristFeedVolts", wristFeedVolts);
@@ -188,9 +206,15 @@ public class Arm extends SubsystemBase {
         if(positionForbidden(targetPos, getWristPos())) 
         {
              forbFlag = true;
+             targetArmForb = true;
             return;
-        } 
-      
+        }
+        else if (driveWristForb == false || driveArmForb == false|| targetWristForb == false)
+         {
+            forbFlag = false;
+            targetArmForb = false;
+         }
+
 
         armProfile = new TrapezoidProfile(armConstraints, new TrapezoidProfile.State(targetPos, targetVel), armProfile.calculate(armProfileTimer.get()));
         armProfileTimer.reset();
@@ -205,8 +229,15 @@ public class Arm extends SubsystemBase {
         if(wristMovementForbidden(getArmPos(), targetPos, targetPos - getWristPos())) 
         {
             forbFlag = true;
+            targetWristForb = true;
             return;
         }
+        else if (driveWristForb == false || driveArmForb == false|| targetArmForb == false)
+        {
+           forbFlag = false;
+           targetArmForb = false;
+        }
+
         wristProfile = new TrapezoidProfile(wristConstraints, new TrapezoidProfile.State(targetPos, targetVel), wristProfile.calculate(wristProfileTimer.get()));
         wristProfileTimer.reset();
 
@@ -346,14 +377,14 @@ public class Arm extends SubsystemBase {
         double tipAngle = MathUtil.inputModulus(armPos + wristPos + ROLLER_COM_CORRECTION_RAD, -3 * Math.PI / 2, Math.PI / 2);
         return Math.signum(tipAngle + Math.PI / 2) != Math.signum(wristVelSign);
     }
-   
+
     public boolean getForbFlag()
     {
         boolean output = forbFlag;
         forbFlag = false;//default: if it wasn't set to true, it's false
         return output;
     }
-   
+
 
     public static boolean positionForbidden(double armPos, double wristPos) {
 

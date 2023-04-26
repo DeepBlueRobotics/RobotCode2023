@@ -195,12 +195,12 @@ public class RobotContainer {
   }
 
 
-  private double getStickValue(GenericHID stick, Axis axis) {
+  
   public void onEnable() {
     lime.getNTEntry("pipeline").setDouble(DriverStation.getAlliance() == Alliance.Red ? 1 : 0);
   }
 
-  private double getStickValue(GenricHID stick, Axis axis) {
+  private double getStickValue(GenericHID stick, Axis axis) {
 
     return stick.getRawAxis(axis.value) * (axis == Axis.kLeftY || axis == Axis.kRightY ? -1 : 1);
   }
