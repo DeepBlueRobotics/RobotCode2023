@@ -4,6 +4,7 @@ import static org.carlmontrobotics.robotcode2023.Constants.Arm.*;
 
 import org.carlmontrobotics.MotorConfig;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
+import org.carlmontrobotics.robotcode2023.RobotContainer;
 import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
 import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;
 
@@ -149,9 +150,10 @@ public class Arm extends SubsystemBase {
     //#region Drive Methods
 
     private void driveArm(TrapezoidProfile.State state) {
+        double speedMult = RobotContainer.isdriverchild ? ARM_SLOWMODE_MULT[0] : 1;
         double kgv = getKg();
         double armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(state.velocity, 0);
-        double armPIDVolts = armPID.calculate(getArmPos(), state.position);
+        double armPIDVolts = armPID.calculate(getArmPos(), state.position) * speedMult;
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
               forbFlag = true;  
@@ -169,9 +171,10 @@ public class Arm extends SubsystemBase {
     }
 
     private void driveWrist(TrapezoidProfile.State state) {
+        double speedMult = RobotContainer.isdriverchild ? ARM_SLOWMODE_MULT[1] : 1;
         double kgv = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
         double wristFeedVolts = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
-        double wristPIDVolts = wristPID.calculate(getWristPos(), state.position);
+        double wristPIDVolts = wristPID.calculate(getWristPos(), state.position) * speedMult;
         if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getWristPos() < WRIST_LOWER_LIMIT_RAD && state.velocity < 0)) {
             forbFlag = true;

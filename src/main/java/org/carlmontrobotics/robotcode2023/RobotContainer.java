@@ -141,8 +141,8 @@ public class RobotContainer {
     configureButtonBindingsManipulator();
     arm.setDefaultCommand(new ArmTeleop(
       arm,
-      () -> {return isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY));},
-      () -> {return isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY));}
+      () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY)));},
+      () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY)));}
     ));
   }
   private void configureButtonBindingsDriver() {
@@ -161,7 +161,7 @@ public class RobotContainer {
     BooleanSupplier isIntake = () -> !isCube.getAsBoolean();
 
     new JoystickButton(manipulatorController, Manipulator.storePosButton).onTrue(new SetArmWristGoalPreset(GoalPos.STORED, isCube, isFront, arm));
-    new JoystickButton(manipulatorController, Manipulator.lowPosButton).onTrue(new SetArmWristGoalPreset(GoalPos.LOW, isCube, isFront, arm));
+    //new JoystickButton(manipulatorController, Manipulator.lowPosButton).onTrue(new SetArmWristGoalPreset(GoalPos.LOW, isCube, isFront, arm));
     new JoystickButton(manipulatorController, Manipulator.midPosButton).onTrue(new SetArmWristGoalPreset(GoalPos.MID, isCube, isFront, arm));
     new JoystickButton(manipulatorController, Manipulator.highPosButton).onTrue(new SetArmWristGoalPreset(GoalPos.HIGH, isCube, isFront, arm));
     new POVButton(manipulatorController, Manipulator.shelfPickupPOV).onTrue(new SetArmWristGoalPreset(GoalPos.SHELF, isCube, isFront, arm));

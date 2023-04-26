@@ -140,7 +140,7 @@ public final class Constants {
 
         public static final double kNormalDriveSpeed = 1; // Percent Multiplier
         public static final double kNormalDriveRotation = 0.5; // Percent Multiplier
-        public static final double kSlowDriveSpeed = 0.4; // Percent Multiplier
+        public static final double kSlowDriveSpeed = 0.1; // Percent Multiplier
         public static final double kSlowDriveRotation = 0.250; // Percent Multiplier
         public static final double kAlignMultiplier = 1D/3D;
         public static final double kAlignForward = 0.6;
@@ -223,6 +223,7 @@ public final class Constants {
         // TODO: Determine actual max vel/accel
         // public static double[] MAX_FF_VEL = {.25, .25}; // rad / s
         //Arm, Wrist
+        public static double[] ARM_SLOWMODE_MULT = {.1, .5};
         public static double[] MAX_FF_VEL_MANUAL = {1, 3}; // rad / s
         public static double[] MAX_FF_VEL_AUTO = {1.25, 5}; // rad / s
         public static double[] MAX_FF_ACCEL = {5, 5}; // rad / s^2
