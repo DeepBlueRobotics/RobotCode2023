@@ -140,8 +140,10 @@ public final class Constants {
 
         public static final double kNormalDriveSpeed = 1; // Percent Multiplier
         public static final double kNormalDriveRotation = 0.5; // Percent Multiplier
-        public static final double kSlowDriveSpeed = 0.1; // Percent Multiplier
+        public static final double kSlowDriveSpeed = 0.4; // Percent Multiplier
         public static final double kSlowDriveRotation = 0.250; // Percent Multiplier
+        public static final double kBabyDriveSpeed = 0.1; // Percent Multiplier
+        public static final double kBabyTurnSpeed = 0.2; // Percent Multiplier
         public static final double kAlignMultiplier = 1D/3D;
         public static final double kAlignForward = 0.6;
 
@@ -404,7 +406,7 @@ public final class Constants {
             }
 
             public double getSpeed() {
-                return RobotContainer.isdriverchild ? speed * 0.2 : speed;
+                return speed;
             }
 
             public void setSpeed(double speed) {

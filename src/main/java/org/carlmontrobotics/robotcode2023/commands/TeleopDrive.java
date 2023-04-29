@@ -28,18 +28,20 @@ public class TeleopDrive extends CommandBase {
   private DoubleSupplier str;
   private DoubleSupplier rcw;
   private BooleanSupplier slow;
+  private BooleanSupplier baby;
   private double currentForwardVel = 0;
   private double currentStrafeVel = 0;
 
   /**
    * Creates a new TeleopDrive.
    */
-  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow) {
+  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow, BooleanSupplier baby) {
     addRequirements(this.drivetrain = drivetrain);
     this.fwd = fwd;
     this.str = str;
     this.rcw = rcw;
     this.slow = slow;
+    this.baby = baby;
   }
 
   // Called when the command is initially scheduled.
@@ -67,8 +69,8 @@ public class TeleopDrive extends CommandBase {
     if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH) rotateClockwise = 0.0;
     else rotateClockwise *= maxRCW;
 
-    double driveMultiplier = slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed;
-    double rotationMultiplier = slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation;
+    double driveMultiplier = baby.getAsBoolean() ? kBabyDriveSpeed : (slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed);
+    double rotationMultiplier = baby.getAsBoolean() ? kBabyTurnSpeed : (slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation);
 
     forward *= driveMultiplier;
     strafe *= driveMultiplier;
