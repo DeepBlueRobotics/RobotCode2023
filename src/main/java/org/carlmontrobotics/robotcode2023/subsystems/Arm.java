@@ -101,8 +101,12 @@ public class Arm extends SubsystemBase {
         // MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
         // MAX_FF_VEL[WRIST] = SmartDashboard.getNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
         ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = SmartDashboard.getNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
-        // wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[WRIST], MAX_FF_ACCEL[WRIST]);
-        // armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL[ARM], MAX_FF_ACCEL[ARM]);
+        armConstraints = new TrapezoidProfile.Constraints(
+          RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
+          MAX_FF_ACCEL[0]);
+        wristConstraints = new TrapezoidProfile.Constraints(
+          RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[1] : MAX_FF_VEL_AUTO[1],
+          MAX_FF_ACCEL[1]);
         armPID.setP(kP[ARM]);
         armPID.setI(kI[ARM]);
         armPID.setD(kD[ARM]);
@@ -150,10 +154,9 @@ public class Arm extends SubsystemBase {
     //#region Drive Methods
 
     private void driveArm(TrapezoidProfile.State state) {
-        double speedMult = RobotContainer.isdriverchild ? ARM_SLOWMODE_MULT[0] : 1;
         double kgv = getKg();
         double armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(state.velocity, 0);
-        double armPIDVolts = armPID.calculate(getArmPos(), state.position) * speedMult;
+        double armPIDVolts = armPID.calculate(getArmPos(), state.position);
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
               forbFlag = true;  
@@ -171,10 +174,9 @@ public class Arm extends SubsystemBase {
     }
 
     private void driveWrist(TrapezoidProfile.State state) {
-        double speedMult = RobotContainer.isdriverchild ? ARM_SLOWMODE_MULT[1] : 1;
         double kgv = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
         double wristFeedVolts = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
-        double wristPIDVolts = wristPID.calculate(getWristPos(), state.position) * speedMult;
+        double wristPIDVolts = wristPID.calculate(getWristPos(), state.position);
         if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getWristPos() < WRIST_LOWER_LIMIT_RAD && state.velocity < 0)) {
             forbFlag = true;
