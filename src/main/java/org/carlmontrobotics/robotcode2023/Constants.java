@@ -142,7 +142,7 @@ public final class Constants {
         public static final double kNormalDriveRotation = 0.5; // Percent Multiplier
         public static final double kSlowDriveSpeed = 0.4; // Percent Multiplier
         public static final double kSlowDriveRotation = 0.250; // Percent Multiplier
-        public static final double kBabyDriveSpeed = 0.1; // Percent Multiplier
+        public static final double kBabyDriveSpeed = 0.3; // Percent Multiplier
         public static final double kBabyTurnSpeed = 0.2; // Percent Multiplier
         public static final double kAlignMultiplier = 1D/3D;
         public static final double kAlignForward = 0.6;
@@ -183,7 +183,7 @@ public final class Constants {
         // Arm, Wrist
         public static double[] kP = {4.2736, 4.8804}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
         public static double[] kI = {0, 0}; // (V / (rad * s) )
-        public static double[] kD = {0, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
+        public static double[] kD = {0.1, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
 
         // Arm, Wrist
         public static double[] posToleranceRad = { .07, .07 }; // rad
@@ -214,7 +214,7 @@ public final class Constants {
         public static final double DT_EXTENSION_FOR_ROLLER = Units.inchesToMeters(14);
 
         // TODO: Replace these values with Design's actual values
-        public static final double MARGIN_OF_ERROR = Math.toRadians(10);
+        public static final double MARGIN_OF_ERROR = Math.PI/18;
         public static final double ARM_LOWER_LIMIT_RAD = -3.569 + MARGIN_OF_ERROR;
         public static final double ARM_UPPER_LIMIT_RAD = .36 - MARGIN_OF_ERROR;
         public static final double ARM_DISCONTINUITY_RAD = (ARM_LOWER_LIMIT_RAD + ARM_UPPER_LIMIT_RAD) / 2 - Math.PI;
@@ -225,7 +225,7 @@ public final class Constants {
         // TODO: Determine actual max vel/accel
         // public static double[] MAX_FF_VEL = {.25, .25}; // rad / s
         //Arm, Wrist
-        public static double[] MAX_FF_VEL_BABY = {1, 2};
+        public static double[] MAX_FF_VEL_BABY = {0.675, 0.7};
         public static double[] MAX_FF_ACCEL_BABY = {4, 4};
         public static double[] MAX_FF_VEL_MANUAL = {1, 3}; // rad / s
         public static double[] MAX_FF_VEL_AUTO = {1.25, 5}; // rad / s
