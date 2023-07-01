@@ -51,10 +51,6 @@ public final class Constants {
         public static final double maxStrafe = maxSpeed;
        // seconds it takes to go from 0 to 12 volts(aka MAX)
         public static final double secsPer12Volts = 0.1;
-        
-        
-        
-        
         // maxRCW is the angular velocity of the robot.
         // Calculated by looking at one of the motors and treating it as a point mass moving around in a circle.
         // Tangential speed of this point mass is maxSpeed and the radius of the circle is sqrt((wheelBase/2)^2 + (trackWidth/2)^2)
@@ -89,13 +85,13 @@ public final class Constants {
         public static final boolean[] driveInversion = {false, false, false, false};
         public static final boolean[] turnInversion = {true, true, true, true};
 
-        public static final double[] kForwardVolts = {0.129, 0.108, 0.14, 0.125};
-        public static final double[] kBackwardVolts = {0.115, 0.169, 0.13, 0.148};
+        public static final double[] kForwardVolts = {0.24998, 0.24998, 0.24998, 0.24998};
+        public static final double[] kBackwardVolts = {0.24998, 0.24998, 0.24998, 0.24998};
 
-        public static final double[] kForwardVels = {2.910/1.1, 2.970/1.1, 2.890/1.1, 2.930/1.1};
-        public static final double[] kBackwardVels = {2.890/1.1, 2.800/1.1, 2.850/1.1, 2.820/1.1};
-        public static final double[] kForwardAccels = {0.145, 0.149, 0.192, 0.198};
-        public static final double[] kBackwardAccels = {0.192, 0.187, 0.264, 0.176};
+        public static final double[] kForwardVels = {8.0918, 8.0918, 8.0918, 8.0918};
+        public static final double[] kBackwardVels = {8.0918, 8.0918, 8.0918, 8.0918};
+        public static final double[] kForwardAccels = {2.0113, 2.0113, 2.0113, 2.0113};
+        public static final double[] kBackwardAccels = {2.0113, 2.0113, 2.0113, 2.0113};
 
         public static final double autoMaxSpeedMps = 0.35 * 4.4;  // Meters / second
         public static final double autoMaxAccelMps2 = mu * g;  // Meters / seconds^2
@@ -225,7 +221,7 @@ public final class Constants {
         // TODO: Determine actual max vel/accel
         // public static double[] MAX_FF_VEL = {.25, .25}; // rad / s
         //Arm, Wrist
-        public static double[] MAX_FF_VEL_BABY = {1, 2};
+        public static double[] MAX_FF_VEL_BABY = {0.1, 0.2};
         public static double[] MAX_FF_ACCEL_BABY = {4, 4};
         public static double[] MAX_FF_VEL_MANUAL = {1, 3}; // rad / s
         public static double[] MAX_FF_VEL_AUTO = {1.25, 5}; // rad / s
