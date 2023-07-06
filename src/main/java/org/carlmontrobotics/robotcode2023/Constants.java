@@ -79,19 +79,19 @@ public final class Constants {
         // kP is an average of the forward and backward kP values
         // Forward: 1.72, 1.71, 1.92, 1.94
         // Backward: 1.92, 1.92, 2.11, 1.89
-        public static final double[] drivekP = {1.82, 1.815, 2.015, 1.915};
+        public static final double[] drivekP = {3.5671, 3.5671, 3.5671, 3.5671};
         public static final double[] drivekI = {0, 0, 0, 0};
         public static final double[] drivekD = {0, 0, 0, 0};
         public static final boolean[] driveInversion = {false, false, false, false};
         public static final boolean[] turnInversion = {true, true, true, true};
 
-        public static final double[] kForwardVolts = {0.24998, 0.24998, 0.24998, 0.24998};
-        public static final double[] kBackwardVolts = {0.24998, 0.24998, 0.24998, 0.24998};
+        public static final double[] kForwardVolts = {0.25287, 0.25287, 0.25287, 0.25287};
+        public static final double[] kBackwardVolts = {0.25287, 0.25287, 0.25287, 0.25287};
 
-        public static final double[] kForwardVels = {8.0918, 8.0918, 8.0918, 8.0918};
-        public static final double[] kBackwardVels = {8.0918, 8.0918, 8.0918, 8.0918};
-        public static final double[] kForwardAccels = {2.0113, 2.0113, 2.0113, 2.0113};
-        public static final double[] kBackwardAccels = {2.0113, 2.0113, 2.0113, 2.0113};
+        public static final double[] kForwardVels = {2.6509, 2.6509, 2.6509, 2.6509};
+        public static final double[] kBackwardVels = {2.6509, 2.6509, 2.6509, 2.6509};
+        public static final double[] kForwardAccels = {0.43011, 0.43011, 0.43011, 0.43011};
+        public static final double[] kBackwardAccels = {0.43011, 0.43011, 0.43011, 0.43011};
 
         public static final double autoMaxSpeedMps = 0.35 * 4.4;  // Meters / second
         public static final double autoMaxAccelMps2 = mu * g;  // Meters / seconds^2
