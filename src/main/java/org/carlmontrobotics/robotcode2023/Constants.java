@@ -50,8 +50,12 @@ public final class Constants {
         public static final double maxSpeed = NEOFreeSpeed * (wheelDiameterMeters / 2.0) / driveGearing;
         public static final double maxForward = maxSpeed;
         public static final double maxStrafe = maxSpeed;
-        
-        
+       // seconds it takes to go from 0 to 12 volts(aka MAX)
+        public static final double secsPer12Volts = 0.1;
+
+
+
+
         // maxRCW is the angular velocity of the robot.
         // Calculated by looking at one of the motors and treating it as a point mass moving around in a circle.
         // Tangential speed of this point mass is maxSpeed and the radius of the circle is sqrt((wheelBase/2)^2 + (trackWidth/2)^2)
@@ -149,7 +153,7 @@ public final class Constants {
         public static final double wheelTurnDriveSpeed = 0.0001; // Meters / Second ; A non-zero speed just used to orient the wheels to the correct angle. This should be very small to avoid actually moving the robot.
 
         public static final double[] positionTolerance = {Units.inchesToMeters(.5), Units.inchesToMeters(.5), 5}; // Meters, Meters, Degrees
-        public static final double[] velocityTolerance = {Units.inchesToMeters(1), Units.inchesToMeters(1), 25}; // Meters, Meters, Degrees/Second
+        public static final double[] velocityTolerance = {Units.inchesToMeters(1), Units.inchesToMeters(1), 5}; // Meters, Meters, Degrees/Second
 
         public static final double ROBOT_MASS = Units.lbsToKilograms(112.625);
         public static final Translation2d COM_ROBOT = new Translation2d();
@@ -181,11 +185,11 @@ public final class Constants {
         // Arm, Wrist
         public static double[] kP = {4.2736, 4.8804}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
         public static double[] kI = {0, 0}; // (V / (rad * s) )
-        public static double[] kD = {0, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
+        public static double[] kD = {0.1, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
 
         // Arm, Wrist
-        public static double[] posToleranceRad = { .07, .05 }; // rad
-        public static double[] velToleranceRadPSec = { 1, 0.5 }; // rad/s
+        public static double[] posToleranceRad = { .07, .07 }; // rad
+        public static double[] velToleranceRadPSec = { 1, 1 }; // rad/s
 
         public static double[] offsetRad = { 0.865, 2.93 + Math.PI / 2 }; // rad
         public static final double rumbleFullPower = 1;
@@ -212,7 +216,7 @@ public final class Constants {
         public static final double DT_EXTENSION_FOR_ROLLER = Units.inchesToMeters(14);
 
         // TODO: Replace these values with Design's actual values
-        public static final double MARGIN_OF_ERROR = Math.toRadians(10);
+        public static final double MARGIN_OF_ERROR = Math.PI/18;
         public static final double ARM_LOWER_LIMIT_RAD = -3.569 + MARGIN_OF_ERROR;
         public static final double ARM_UPPER_LIMIT_RAD = .36 - MARGIN_OF_ERROR;
         public static final double ARM_DISCONTINUITY_RAD = (ARM_LOWER_LIMIT_RAD + ARM_UPPER_LIMIT_RAD) / 2 - Math.PI;
@@ -292,7 +296,7 @@ public final class Constants {
             },
             {
                 new GoalPos(-3.415958, 1.700500),
-                new GoalPos(-3.414373, 0.644038)
+                new GoalPos(-3.414373, 0.667)
             }
         };
         // TODO: Get positions for STORED, SHELF, and SUBSTATION
@@ -387,7 +391,7 @@ public final class Constants {
             public double speed, time;
             public GameObject obj;
             public Color ledColor;
-    
+
             /**
              * @param speed  A number between -1 and 1
              * @param time   Amount of time in seconds to keep the motor running after
