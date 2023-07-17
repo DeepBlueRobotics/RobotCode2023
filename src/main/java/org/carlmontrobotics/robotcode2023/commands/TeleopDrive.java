@@ -114,7 +114,7 @@ public class TeleopDrive extends CommandBase {
   public Translation2d getCoM() {
     Translation2d comArm = arm.getCoM().plus(Constants.Arm.ARM_JOINT_POS);
 
-    return comArm.times(Constants.Arm.ARM_MASS_KG + Constants.Arm.ROLLER_MASS_KG).plus(COM_ROBOT.times(ROBOT_MASS - Constants.Arm.ARM_MASS_KG - Constants.Arm.ROLLER_MASS_KG));
+    return comArm.times(Constants.Arm.ARM_MASS_KG + Constants.Arm.ROLLER_MASS_KG).plus(COM_ROBOT.times(ROBOT_MASS - Constants.Arm.ARM_MASS_KG - Constants.Arm.ROLLER_MASS_KG)).div(ROBOT_MASS);
   }
 
   // Gets the acceleration limit in the direction opposite the CoM
