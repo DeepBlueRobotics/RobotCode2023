@@ -182,7 +182,9 @@ public final class Constants {
         public static double[] kP = {4.2736, 4.8804}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
         public static double[] kI = {0, 0}; // (V / (rad * s) )
         public static double[] kD = {0.1, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
-
+        public static double[] kIz = {1.5, 1.5}; // the distance from the setpoint that I is allowed to begin affecting PID, in whatever units the PID is given
+        public static double[] kFF = {0, 0}; // a constant speed bonus to overcome static friction
+      
         // Arm, Wrist
         public static double[] posToleranceRad = { .07, .07 }; // rad
         public static double[] velToleranceRadPSec = { 1, 1 }; // rad/s

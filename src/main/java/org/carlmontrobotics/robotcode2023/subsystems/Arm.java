@@ -10,6 +10,7 @@ import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
@@ -43,8 +44,9 @@ public class Arm extends SubsystemBase {
     private final SimpleMotorFeedforward armFeed = new SimpleMotorFeedforward(kS[ARM], kV[ARM], kA[ARM]);
     private ArmFeedforward wristFeed = new ArmFeedforward(kS[WRIST], kG[WRIST], kV[WRIST], kA[WRIST]);
 
-    private final PIDController armPID = new PIDController(kP[ARM], kI[ARM], kD[ARM]);
-    private final PIDController wristPID = new PIDController(kP[WRIST], kI[WRIST], kD[WRIST]);
+    private final SparkMaxPIDController armPID = armMotor.getPIDController();
+    private final SparkMaxPIDController wristPID = wristMotor.getPIDController();
+    private double armPIDgoal=0.0, wristPIDgoal=0.0;
 
     private TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints, goalState[ARM], getCurrentArmState());
     private TrapezoidProfile wristProfile = new TrapezoidProfile(wristConstraints, goalState[WRIST], getCurrentWristState());
@@ -70,8 +72,21 @@ public class Arm extends SubsystemBase {
 
         armEncoder.setZeroOffset(offsetRad[ARM]);
         wristEncoder.setZeroOffset(offsetRad[WRIST]);
-        armPID.setTolerance(posToleranceRad[ARM], velToleranceRadPSec[ARM]);
-        wristPID.setTolerance(posToleranceRad[WRIST], velToleranceRadPSec[WRIST]);
+      
+        armPID.setFeedbackDevice(armEncoder);
+        wristPID.setFeedbackDevice(wristEncoder);
+        armPID.setSmartMotionAllowedClosedLoopError(posToleranceRad[ARM], 0);//nobody knows what the zero means, if something breaks it might be the 0's fault.
+        wristPID.setSmartMotionAllowedClosedLoopError(posToleranceRad[WRIST], 0);
+        
+        armPID.setSmartMotionAccelStrategy(SparkMaxPIDController.AccelStrategy.kTrapezoidal, 0);//valid options: kTrapezoidal (nothing else!)
+        wristPID.setSmartMotionAccelStrategy(SparkMaxPIDController.AccelStrategy.kTrapezoidal, 0);
+        armPID.setOutputRange(-1,1);
+        wristPID.setOutputRange(-1,1);
+        
+        armPID.setPositionPIDWrappingMaxInput(ARM_DISCONTINUITY_RAD);
+        armPID.setPositionPIDWrappingMinInput(ARM_DISCONTINUITY_RAD + 2 * Math.PI);
+        wristPID.setPositionPIDWrappingMaxInput(WRIST_DISCONTINUITY_RAD);
+        wristPID.setPositionPIDWrappingMinInput(WRIST_DISCONTINUITY_RAD + 2 * Math.PI);
 
         SmartDashboard.putData("Arm", this);
 
@@ -105,12 +120,16 @@ public class Arm extends SubsystemBase {
         armPID.setP(kP[ARM]);
         armPID.setI(kI[ARM]);
         armPID.setD(kD[ARM]);
+        armPID.setIZone(kIz[ARM]);
+        armPID.setFF(kFF[ARM]);
         wristPID.setP(kP[WRIST]);
         wristPID.setI(kI[WRIST]);
         wristPID.setD(kD[WRIST]);
-        SmartDashboard.putBoolean("ArmPIDAtSetpoint", armPID.atSetpoint());
+        wristPID.setIZone(kIz[ARM]);
+        wristPID.setFF(kFF[ARM]);
+        SmartDashboard.putBoolean("ArmPIDAtSetpoint", isAtSetpoint(ARM));
         SmartDashboard.putBoolean("ArmProfileFinished", armProfile.isFinished(armProfileTimer.get()));
-        SmartDashboard.putBoolean("WristPIDAtSetpoint", wristPID.atSetpoint());
+        SmartDashboard.putBoolean("WristPIDAtSetpoint", isAtSetpoint(WRIST));
         SmartDashboard.putBoolean("WristProfileFinished", wristProfile.isFinished(wristProfileTimer.get()));
         posToleranceRad[ARM] = SmartDashboard.getNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
         posToleranceRad[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
@@ -151,38 +170,40 @@ public class Arm extends SubsystemBase {
     private void driveArm(TrapezoidProfile.State state) {
         double kgv = getKg();
         double armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(state.velocity, 0);
-        double armPIDVolts = armPID.calculate(getArmPos(), state.position);
+        SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
+        
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
               forbFlag = true;  
             armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(0, 0);
         }
        
+        setJointPIDTarget(ARM,state.position);
+        double volts = armMotor.getBusVoltage();//IMPORTANT may not be set immediately, in which case this should be ommitted from the calculations
+        SmartDashboard.putNumber("ArmPIDVolts", volts);
         
-        // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
-        // TO MASTER IF THIS IS STILL HERE)
-        SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
-        SmartDashboard.putNumber("ArmPIDVolts", armPIDVolts);
-        double volts = armFeedVolts + armPIDVolts;
+        volts += armFeedVolts;
         SmartDashboard.putNumber("ArmTotalVolts", volts);
+        
         armMotor.setVoltage(volts);
     }
 
     private void driveWrist(TrapezoidProfile.State state) {
         double kgv = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
         double wristFeedVolts = wristFeed.calculate(getWristPosRelativeToGround(), state.velocity, 0);
-        double wristPIDVolts = wristPID.calculate(getWristPos(), state.position);
+        SmartDashboard.putNumber("WristFeedVolts", wristFeedVolts);
+        
         if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getWristPos() < WRIST_LOWER_LIMIT_RAD && state.velocity < 0)) {
             forbFlag = true;
             wristFeedVolts = kgv;
         }
        
-        // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
-        // TO MASTER IF THIS IS STILL HERE)
-        SmartDashboard.putNumber("WristFeedVolts", wristFeedVolts);
-        SmartDashboard.putNumber("WristPIDVolts", wristPIDVolts);
-        double volts = wristFeedVolts + wristPIDVolts;
+        setJointPIDTarget(WRIST,state.position);
+        double volts = wristMotor.getBusVoltage();//IMPORTANT may not be set immediately, in which case this should be ommitted from the calculations
+        SmartDashboard.putNumber("WristPIDVolts", volts);
+        
+        volts += wristFeedVolts;
         SmartDashboard.putNumber("WristTotalVolts", volts);
         wristMotor.setVoltage(volts);
     }
@@ -227,11 +248,37 @@ public class Arm extends SubsystemBase {
         armProfile = new TrapezoidProfile(armConstraints, goalState[ARM], goalState[ARM]);
         wristProfile = new TrapezoidProfile(wristConstraints, goalState[WRIST], goalState[WRIST]);
     }
+  
+    public void setJointPIDTarget(int joint, double targetPos) throws IndexOutOfBoundsException {
+      switch (joint) {
+        case 0:
+          armPIDgoal = targetPos - offsetRad[ARM];
+          armPID.setReference(armPIDgoal, CANSparkMax.ControlType.kDutyCycle); //maybe should be kPosition or kSmartMotion
+          break;
+        case 1:
+          wristPIDgoal = targetPos - offsetRad[WRIST];
+          wristPID.setReference(wristPIDgoal, CANSparkMax.ControlType.kDutyCycle); //maybe should be kPosition or kSmartMotion
+          break;
+        default:
+          throw new IndexOutOfBoundsException("Index "+joint+"is not ARM(0) or WRIST(1)!");
+      }
+    }
 
     //#endregion
 
     //#region Getters
-
+    
+    public boolean isAtSetpoint(int joint) throws IndexOutOfBoundsException{
+      switch (joint) {
+        case 0:
+          return (armPIDgoal == getArmPos());
+        case 1:
+          return (wristPIDgoal == getWristPos());
+        default:
+          throw new IndexOutOfBoundsException("Index "+joint+"is not ARM(0) or WRIST(1)!");
+      }
+    }
+  
     public double getArmPos() {
         return MathUtil.inputModulus(armEncoder.getPosition(), ARM_DISCONTINUITY_RAD,
                 ARM_DISCONTINUITY_RAD + 2 * Math.PI);
@@ -272,11 +319,11 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean armAtSetpoint() {
-        return armPID.atSetpoint() && armProfile.isFinished(armProfileTimer.get());
+        return isAtSetpoint(ARM) && armProfile.isFinished(armProfileTimer.get());
     }
 
     public boolean wristAtSetpoint() {
-        return wristPID.atSetpoint() && wristProfile.isFinished(wristProfileTimer.get());
+        return isAtSetpoint(WRIST) && wristProfile.isFinished(wristProfileTimer.get());
     }
 
     //#endregion
