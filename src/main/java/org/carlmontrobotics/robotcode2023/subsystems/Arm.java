@@ -22,6 +22,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,8 +36,8 @@ public class Arm extends SubsystemBase {
     private final CANSparkMax armMotor = MotorControllerFactory.createSparkMax(armMotorPort, MotorConfig.NEO);
     private final CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(wristMotorPort, MotorConfig.NEO);
     private final RelativeEncoder armRelEncoder = armMotor.getEncoder();
-    private final SparkMaxAbsoluteEncoder armEncoder = armMotor
-            .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
+    // TODO: Put in correct DIO port
+    private final DutyCycleEncoder armEncoder = new DutyCycleEncoder(0);
     private final SparkMaxAbsoluteEncoder wristEncoder = wristMotor
             .getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle);
 
@@ -61,14 +62,15 @@ public class Arm extends SubsystemBase {
 
         wristMotor.setIdleMode(IdleMode.kBrake);
 
-        armEncoder.setPositionConversionFactor(rotationToRad);
+        armEncoder.setDistancePerRotation(rotationToRad);
         wristEncoder.setPositionConversionFactor(rotationToRad);
-        armEncoder.setVelocityConversionFactor(rotationToRad);
         wristEncoder.setVelocityConversionFactor(rotationToRad);
-        armEncoder.setInverted(encoderInverted[ARM]);
+        // TODO: Set armEncoder.setDistancePerRotation as a neg val if it is inverted?
+        //armEncoder.setInverted(encoderInverted[ARM]);
         wristEncoder.setInverted(encoderInverted[WRIST]);
 
-        armEncoder.setZeroOffset(offsetRad[ARM]);
+        // TODO: NEEDS TO BE RECALIBRATED, ALSO IN ROTATIONS
+        armEncoder.setPositionOffset(0);
         wristEncoder.setZeroOffset(offsetRad[WRIST]);
         armPID.setTolerance(posToleranceRad[ARM], velToleranceRadPSec[ARM]);
         wristPID.setTolerance(posToleranceRad[WRIST], velToleranceRadPSec[WRIST]);
@@ -233,12 +235,13 @@ public class Arm extends SubsystemBase {
     //#region Getters
 
     public double getArmPos() {
-        return MathUtil.inputModulus(armEncoder.getPosition(), ARM_DISCONTINUITY_RAD,
+        return MathUtil.inputModulus(armEncoder.get(), ARM_DISCONTINUITY_RAD,
                 ARM_DISCONTINUITY_RAD + 2 * Math.PI);
     }
 
     public double getArmVel() {
-        return armEncoder.getVelocity();
+        return 0;
+        //return armEncoder.getVelocity();
     }
 
     public double getWristPos() {
