@@ -189,7 +189,7 @@ public final class Constants {
         public static double[] posToleranceRad = { .07, .07 }; // rad
         public static double[] velToleranceRadPSec = { 1, 1 }; // rad/s
 
-        public static double[] offsetRad = { 0.865, 2.93 + Math.PI / 2 }; // rad
+        public static double[] offsetRad = { 2.936 + 0.301, 2.93 + Math.PI / 2 }; // rad
         public static final double rumbleFullPower = 1;
         public static final double rumbleNoPower = 0;
 
@@ -238,7 +238,7 @@ public final class Constants {
         //#region Ports
 
         public static final boolean[] motorInverted = { true, false };
-        public static final boolean[] encoderInverted = { false, true };
+        public static final boolean[] encoderInverted = { true, true };
         public static final double rotationToRad = 2 * Math.PI;
 
         public static final int armMotorPort = 17;
@@ -255,6 +255,7 @@ public final class Constants {
         public static final int WRIST_CURRENT_LIMIT_AMP = 15;
         public static final double ROLLER_COM_CORRECTION_RAD = Units.degreesToRadians(18.3);
         public static double ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = .5;
+        public static final double DISCONNECTED_ENCODER_TIMEOUT_SEC = .25;
 
         //#endregion
 

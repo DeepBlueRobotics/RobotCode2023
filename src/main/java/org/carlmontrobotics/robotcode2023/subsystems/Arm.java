@@ -12,6 +12,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -55,7 +56,14 @@ public class Arm extends SubsystemBase {
     // rad, rad/s
     public static TrapezoidProfile.State[] goalState = { new TrapezoidProfile.State(-Math.PI / 2, 0), new TrapezoidProfile.State(0, 0) };
 
+    private double lastArmPos;
+    private double lastMeasuredTime;
+    private boolean isArmEncoderConnected = false;
+
     public Arm() {
+        Timer.getFPGATimestamp();
+        armMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
+        wristMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
         armMotor.setInverted(motorInverted[ARM]);
         wristMotor.setInverted(motorInverted[WRIST]);
         armMotor.setIdleMode(IdleMode.kBrake);
@@ -82,14 +90,16 @@ public class Arm extends SubsystemBase {
         setArmTarget(goalState[ARM].position, 0);
         setWristTarget(goalState[WRIST].position, 0);
         wristMotor.setSmartCurrentLimit(WRIST_CURRENT_LIMIT_AMP);
+        lastArmPos = getArmPos();
+        lastMeasuredTime = Timer.getFPGATimestamp();
 
         // SmartDashboard.putNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
         // SmartDashboard.putNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
-        SmartDashboard.putNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
-        SmartDashboard.putNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
-        SmartDashboard.putNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
-        SmartDashboard.putNumber("Arm Tolerance Vel", velToleranceRadPSec[ARM]);
-        SmartDashboard.putNumber("Wrist Tolerance Vel", velToleranceRadPSec[WRIST]);
+        // SmartDashboard.putNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
+        // SmartDashboard.putNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
+        // SmartDashboard.putNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
+        // SmartDashboard.putNumber("Arm Tolerance Vel", velToleranceRadPSec[ARM]);
+        // SmartDashboard.putNumber("Wrist Tolerance Vel", velToleranceRadPSec[WRIST]);
     }
 
     @Override
@@ -97,10 +107,24 @@ public class Arm extends SubsystemBase {
 
         if(DriverStation.isDisabled()) resetGoal();
 
+        double currTime = Timer.getFPGATimestamp();
+        SmartDashboard.putNumber("Current Time", currTime);
+        SmartDashboard.putNumber("Last Update (s)", lastMeasuredTime);
+        
+        // when the value is different
+        double currentArmPos = getArmPos();
+        if (currentArmPos != lastArmPos) {
+            lastMeasuredTime = currTime;
+            lastArmPos = currentArmPos;
+        }
+        isArmEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
+        SmartDashboard.putBoolean("ArmEncoderConnected", isArmEncoderConnected);
+        
+
         // TODO: REMOVE THIS WHEN PID CONSTANTS ARE DONE
         // MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
         // MAX_FF_VEL[WRIST] = SmartDashboard.getNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
-        ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = SmartDashboard.getNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
+        // ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = SmartDashboard.getNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
         armConstraints = new TrapezoidProfile.Constraints(
           RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
           MAX_FF_ACCEL[0]);
@@ -113,26 +137,32 @@ public class Arm extends SubsystemBase {
         wristPID.setP(kP[WRIST]);
         wristPID.setI(kI[WRIST]);
         wristPID.setD(kD[WRIST]);
-        SmartDashboard.putBoolean("ArmPIDAtSetpoint", armPID.atSetpoint());
-        SmartDashboard.putBoolean("ArmProfileFinished", armProfile.isFinished(armProfileTimer.get()));
-        SmartDashboard.putBoolean("WristPIDAtSetpoint", wristPID.atSetpoint());
-        SmartDashboard.putBoolean("WristProfileFinished", wristProfile.isFinished(wristProfileTimer.get()));
-        posToleranceRad[ARM] = SmartDashboard.getNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
-        posToleranceRad[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
-        velToleranceRadPSec[ARM] = SmartDashboard.getNumber("Arm Tolerance Vel", velToleranceRadPSec[ARM]);
-        velToleranceRadPSec[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Vel", velToleranceRadPSec[WRIST]);
+        // SmartDashboard.putBoolean("ArmPIDAtSetpoint", armPID.atSetpoint());
+        // SmartDashboard.putBoolean("ArmProfileFinished", armProfile.isFinished(armProfileTimer.get()));
+        // SmartDashboard.putBoolean("WristPIDAtSetpoint", wristPID.atSetpoint());
+        // SmartDashboard.putBoolean("WristProfileFinished", wristProfile.isFinished(wristProfileTimer.get()));
+        // posToleranceRad[ARM] = SmartDashboard.getNumber("Arm Tolerance Pos", posToleranceRad[ARM]);
+        // posToleranceRad[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Pos", posToleranceRad[WRIST]);
+        // velToleranceRadPSec[ARM] = SmartDashboard.getNumber("Arm Tolerance Vel", velToleranceRadPSec[ARM]);
+        // velToleranceRadPSec[WRIST] = SmartDashboard.getNumber("Wrist Tolerance Vel", velToleranceRadPSec[WRIST]);
 
-        SmartDashboard.putNumber("MaxHoldingTorque", maxHoldingTorqueNM());
-        SmartDashboard.putNumber("V_PER_NM", getV_PER_NM());
-        SmartDashboard.putNumber("COMDistance", getCoM().getNorm());
-        SmartDashboard.putNumber("InternalArmVelocity", armRelEncoder.getVelocity());
-        SmartDashboard.putNumber("Arm Current", armMotor.getOutputCurrent());
-        SmartDashboard.putNumber("Wrist Current", wristMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("MaxHoldingTorque", maxHoldingTorqueNM());
+        // SmartDashboard.putNumber("V_PER_NM", getV_PER_NM());
+        // SmartDashboard.putNumber("COMDistance", getCoM().getNorm());
+        // SmartDashboard.putNumber("InternalArmVelocity", armRelEncoder.getVelocity());
+        // SmartDashboard.putNumber("Arm Current", armMotor.getOutputCurrent());
+        // SmartDashboard.putNumber("Wrist Current", wristMotor.getOutputCurrent());
 
         SmartDashboard.putNumber("ArmPos", getArmPos());
         SmartDashboard.putNumber("WristPos", getWristPos());
 
-        driveArm(armProfile.calculate(armProfileTimer.get()));
+        if (isArmEncoderConnected)
+            driveArm(armProfile.calculate(armProfileTimer.get()));
+        else {
+            armMotor.setVoltage(0);
+            SmartDashboard.putNumber("ArmTotalVolts", 0);
+        }
+        
         driveWrist(wristProfile.calculate(wristProfileTimer.get()));
 
         autoCancelArmCommand();
@@ -159,11 +189,9 @@ public class Arm extends SubsystemBase {
         double armPIDVolts = armPID.calculate(getArmPos(), state.position);
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
-              forbFlag = true;  
+              forbFlag = true;
             armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(0, 0);
         }
-       
-        
         // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
         // TO MASTER IF THIS IS STILL HERE)
         SmartDashboard.putNumber("ArmFeedVolts", armFeedVolts);
