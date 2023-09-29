@@ -32,8 +32,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // Arm angle is measured from horizontal on the intake side of the robot and bounded between -3π/2 and π/2
 // Wrist angle is measured relative to the arm with 0 being parallel to the arm and bounded between -π and π (Center of Mass of Roller)
 public class Arm extends SubsystemBase {
-    // a boolean meant to tell if the arm is in a forbidden posistion AKA FORBIDDEN FLAG
-    private static boolean forbFlag;
     private final CANSparkMax armMotor = MotorControllerFactory.createSparkMax(armMotorPort, MotorConfig.NEO);
     private final CANSparkMax wristMotor = MotorControllerFactory.createSparkMax(wristMotorPort, MotorConfig.NEO);
     private final RelativeEncoder armRelEncoder = armMotor.getEncoder();
@@ -189,7 +187,6 @@ public class Arm extends SubsystemBase {
         double armPIDVolts = armPID.calculate(getArmPos(), state.position);
         if ((getArmPos() > ARM_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getArmPos() < ARM_LOWER_LIMIT_RAD && state.velocity < 0)) {
-              forbFlag = true;
             armFeedVolts = kgv * getCoM().getAngle().getCos() + armFeed.calculate(0, 0);
         }
         // TODO: REMOVE WHEN DONE WITH TESTING (ANY CODE REVIEWERS, PLEASE REJECT MERGES
@@ -207,7 +204,6 @@ public class Arm extends SubsystemBase {
         double wristPIDVolts = wristPID.calculate(getWristPos(), state.position);
         if ((getWristPos() > WRIST_UPPER_LIMIT_RAD && state.velocity > 0) || 
             (getWristPos() < WRIST_LOWER_LIMIT_RAD && state.velocity < 0)) {
-            forbFlag = true;
             wristFeedVolts = kgv;
         }
        
@@ -225,7 +221,6 @@ public class Arm extends SubsystemBase {
 
         if(positionForbidden(targetPos, getWristPos())) 
         {
-             forbFlag = true;
             return;
         } 
       
@@ -242,7 +237,6 @@ public class Arm extends SubsystemBase {
 
         if(wristMovementForbidden(getArmPos(), targetPos, targetPos - getWristPos())) 
         {
-            forbFlag = true;
             return;
         }
         wristProfile = new TrapezoidProfile(wristConstraints, new TrapezoidProfile.State(targetPos, targetVel), wristProfile.calculate(wristProfileTimer.get()));
@@ -385,14 +379,6 @@ public class Arm extends SubsystemBase {
         double tipAngle = MathUtil.inputModulus(armPos + wristPos + ROLLER_COM_CORRECTION_RAD, -3 * Math.PI / 2, Math.PI / 2);
         return Math.signum(tipAngle + Math.PI / 2) != Math.signum(wristVelSign);
     }
-   
-    public boolean getForbFlag()
-    {
-        boolean output = forbFlag;
-        forbFlag = false;//default: if it wasn't set to true, it's false
-        return output;
-    }
-   
 
     public static boolean positionForbidden(double armPos, double wristPos) {
         if (true)
