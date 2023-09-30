@@ -226,7 +226,7 @@ public final class Constants {
         // public static double[] MAX_FF_VEL = {.25, .25}; // rad / s
         //Arm, Wrist
         public static double[] MAX_FF_VEL_BABY = {0.675, 0.7};
-        public static double[] MAX_FF_ACCEL_BABY = {4, 4};
+				public static double[] MAX_FF_ACCEL_BABY = {4, 4};
         public static double[] MAX_FF_VEL_MANUAL = {1, 3}; // rad / s
         public static double[] MAX_FF_VEL_AUTO = {1.25, 5}; // rad / s
         public static double[] MAX_FF_ACCEL = {5, 5}; // rad / s^2

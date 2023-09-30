@@ -117,18 +117,16 @@ public class Arm extends SubsystemBase {
         }
         isArmEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
         SmartDashboard.putBoolean("ArmEncoderConnected", isArmEncoderConnected);
-        
-
-        // TODO: REMOVE THIS WHEN PID CONSTANTS ARE DONE
-        // MAX_FF_VEL[ARM] = SmartDashboard.getNumber("Arm Max Vel", MAX_FF_VEL[ARM]);
-        // MAX_FF_VEL[WRIST] = SmartDashboard.getNumber("Wrist Max Vel", MAX_FF_VEL[WRIST]);
-        // ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = SmartDashboard.getNumber("ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD", ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
+			
+				//TODO: is RobotContainer live or do you need supplier functions
         armConstraints = new TrapezoidProfile.Constraints(
           RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
-          MAX_FF_ACCEL[0]);
+					RobotContainer.isdriverchild ? MAX_FF_ACCEL_BABY[0] : MAX_FF_ACCEL[0]
+        );
         wristConstraints = new TrapezoidProfile.Constraints(
           RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[1] : MAX_FF_VEL_AUTO[1],
-          MAX_FF_ACCEL[1]);
+					RobotContainer.isdriverchild ? MAX_FF_ACCEL_BABY[1] : MAX_FF_ACCEL[1]
+        );
         armPID.setP(kP[ARM]);
         armPID.setI(kI[ARM]);
         armPID.setD(kD[ARM]);

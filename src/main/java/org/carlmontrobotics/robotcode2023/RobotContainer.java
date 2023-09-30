@@ -131,7 +131,7 @@ public class RobotContainer {
 
     drivetrain.setDefaultCommand(new TeleopDrive(
       drivetrain,
-      () -> inputProcessing(getStickValue(driverController, Axis.kLeftY)),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+      () -> inputProcessing(getStickValue(driverController, Axis.kLeftY)),
       () -> inputProcessing(getStickValue(driverController, Axis.kLeftX)),
       () -> inputProcessing(getStickValue(driverController, Axis.kRightX)),
       () -> driverController.getRawButton(Driver.slowDriveButton),
@@ -143,7 +143,8 @@ public class RobotContainer {
     arm.setDefaultCommand(new ArmTeleop(
       arm,
       () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY)));},
-      () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY)));}
+      () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY)));},
+			() -> {return isdriverchild;}
     ));
   }
   private void configureButtonBindingsDriver() {

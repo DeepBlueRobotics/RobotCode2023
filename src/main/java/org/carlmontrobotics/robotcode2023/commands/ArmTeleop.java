@@ -7,6 +7,7 @@ package org.carlmontrobotics.robotcode2023.commands;
 import static org.carlmontrobotics.robotcode2023.Constants.Arm.*;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.BooleanSupplier;
 
 import org.carlmontrobotics.robotcode2023.Constants;
 import org.carlmontrobotics.robotcode2023.subsystems.Arm;
@@ -21,13 +22,15 @@ public class ArmTeleop extends CommandBase {
   private Arm armSubsystem;
   private DoubleSupplier arm;
   private DoubleSupplier wrist;
+	private BooleanSupplier baby;//is robot in baby (safe) mode?
   private double lastTime = 0;
 
-  public ArmTeleop(Arm armSubsystem, DoubleSupplier arm, DoubleSupplier wrist) {
+  public ArmTeleop(Arm armSubsystem, DoubleSupplier arm, DoubleSupplier wrist, BooleanSupplier baby) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(this.armSubsystem = armSubsystem);
     this.arm = arm;
     this.wrist = wrist;
+		this.baby = baby;
   }
 
   // Called when the command is initially scheduled.
@@ -67,18 +70,22 @@ public class ArmTeleop extends CommandBase {
 
   // Copy and pasted from drivetrain, handles input from joysticks
   public double[] getRequestedSpeeds() {
-    double rawArmVel, rawWristVel;
-    // Sets all values less than or equal to a very small value (determined by the
+		// Sets all values less than or equal to a very small value (determined by the
     // idle joystick state) to zero.
+		
+    double rawArmVel, rawWristVel;
+		// prep maximum velocity variable
+		double[] maxFF = baby.getAsBoolean() ? MAX_FF_VEL_BABY : MAX_FF_VEL_MANUAL;
+    
     if (Math.abs(arm.getAsDouble()) <= Constants.OI.JOY_THRESH)
       rawArmVel = 0.0;
     else
-      rawArmVel = MAX_FF_VEL_MANUAL[ARM] * arm.getAsDouble();
+      rawArmVel = maxFF[ARM] * arm.getAsDouble();
 
     if (Math.abs(wrist.getAsDouble()) <= Constants.OI.JOY_THRESH)
       rawWristVel = 0.0;
     else
-      rawWristVel = MAX_FF_VEL_MANUAL[WRIST] * wrist.getAsDouble();
+      rawWristVel = maxFF[WRIST] * wrist.getAsDouble();
 
     return new double[] {rawArmVel, rawWristVel};
   }
