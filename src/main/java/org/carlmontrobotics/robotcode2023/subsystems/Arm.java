@@ -116,16 +116,15 @@ public class Arm extends SubsystemBase {
         if (currentArmPos != lastArmPos) {
             lastMeasuredTime = currTime;
             lastArmPos = currentArmPos;
-            
-            double currentWristPos = getWristPos();
+				}
+				double currentWristPos = getWristPos();
         if (currentWristPos != lastWristPos) {
-            lastMeasuredTime = currTime;
             lastWristPos = currentWristPos;
         }
-        isArmEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
+        isArmEncoderConnected = (currTime - lastMeasuredTime) < DISCONNECTED_ENCODER_TIMEOUT_SEC;
         SmartDashboard.putBoolean("ArmEncoderConnected", isArmEncoderConnected);
         
-        isWristEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
+        isWristEncoderConnected = (currTime - lastMeasuredTime) < DISCONNECTED_ENCODER_TIMEOUT_SEC;
         SmartDashboard.putBoolean("WristEncoderConnected", isWristEncoderConnected);
         
         if (!isArmEncoderConnected) armMotor.stopMotor();
@@ -175,7 +174,6 @@ public class Arm extends SubsystemBase {
         driveWrist(wristProfile.calculate(wristProfileTimer.get()));
 
         autoCancelArmCommand();
-    }
     }
 
     public void autoCancelArmCommand() {
