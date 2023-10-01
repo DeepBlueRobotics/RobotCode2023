@@ -276,6 +276,7 @@ public final class Constants {
         public static final int WRIST_CURRENT_LIMIT_AMP = 15;
         public static final double ROLLER_COM_CORRECTION_RAD = Units.degreesToRadians(18.3);
         public static double ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = .5;
+        // if the encoder has been disconnected for DISCONNECTED_ENCODER_TIMEOUT, shut off the motor
         public static final double DISCONNECTED_ENCODER_TIMEOUT_SEC = .25;
 
         // #endregion
