@@ -54,7 +54,7 @@ public class Arm extends SubsystemBase {
     // rad, rad/s
     public static TrapezoidProfile.State[] goalState = { new TrapezoidProfile.State(-Math.PI / 2, 0), new TrapezoidProfile.State(0, 0) };
 
-    double lastWristPos;
+    private double lastWristPos;
     private double lastArmPos;
     private double lastMeasuredTime;
     private boolean isArmEncoderConnected = false;
@@ -127,7 +127,16 @@ public class Arm extends SubsystemBase {
         
         isWristEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
         SmartDashboard.putBoolean("WristEncoderConnected", isWristEncoderConnected);
-			
+        
+        if(isArmEncoderConnected = false)
+        {
+            armMotor.stopMotor();
+        }
+        if(isWristEncoderConnected = false)
+        {
+            wristMotor.stopMotor();
+        }
+        
 				//TODO: is RobotContainer live or do you need supplier functions
         armConstraints = new TrapezoidProfile.Constraints(
           RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
