@@ -149,10 +149,10 @@ public class RobotContainer {
     arm.setDefaultCommand(new ArmTeleop(
         arm,
         () -> {
-          return (driverMode.isBaby() ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY)));
+          return inputProcessing(getStickValue(manipulatorController, Axis.kLeftY));
         },
         () -> {
-          return (driverMode.isBaby() ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY)));
+          return inputProcessing(getStickValue(manipulatorController, Axis.kRightY));
         },
         () -> {
           return driverMode.isBaby();
@@ -175,7 +175,7 @@ public class RobotContainer {
         .onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(90), drivetrain));
 
     new JoystickButton(driverController, Driver.slowDriveButton)
-        .whileTrue(new InstantCommand(() -> driverMode.isSlow()));
+        .whileTrue(new InstantCommand(() -> {driverMode=DriverMode.SLOW;}));
 
   }
 

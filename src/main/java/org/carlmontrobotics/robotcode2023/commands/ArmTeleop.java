@@ -28,9 +28,9 @@ public class ArmTeleop extends CommandBase {
   public ArmTeleop(Arm armSubsystem, DoubleSupplier arm, DoubleSupplier wrist, BooleanSupplier baby) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(this.armSubsystem = armSubsystem);
-    this.arm = arm;
-    this.wrist = wrist;
-    this.baby = baby;
+		this.baby = baby;
+    this.arm = () -> {return baby.getAsBoolean() ? 0.f : arm.getAsDouble();};
+    this.wrist = () -> {return baby.getAsBoolean() ? 0.f : wrist.getAsDouble();};
   }
 
   // Called when the command is initially scheduled.
