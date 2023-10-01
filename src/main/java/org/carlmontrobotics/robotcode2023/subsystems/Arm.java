@@ -128,14 +128,8 @@ public class Arm extends SubsystemBase {
         isWristEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
         SmartDashboard.putBoolean("WristEncoderConnected", isWristEncoderConnected);
         
-        if(isArmEncoderConnected = false)
-        {
-            armMotor.stopMotor();
-        }
-        if(isWristEncoderConnected = false)
-        {
-            wristMotor.stopMotor();
-        }
+        if (!isArmEncoderConnected) armMotor.stopMotor();
+        if (!isWristEncoderConnected) wristMotor.stopMotor();
         
 				//TODO: is RobotContainer live or do you need supplier functions
         armConstraints = new TrapezoidProfile.Constraints(
