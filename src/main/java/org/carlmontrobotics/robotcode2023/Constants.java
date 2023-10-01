@@ -207,7 +207,7 @@ public final class Constants {
         public static double[] posToleranceRad = { .07, .07 }; // rad
         public static double[] velToleranceRadPSec = { 1, 1 }; // rad/s
 
-        public static double[] offsetRad = { 2.936 + 0.301, 2.93 + Math.PI / 2 }; // rad
+        public static double[] offsetRad = { 3.237, 4.501 }; // rad
         public static final double rumbleFullPower = 1;
         public static final double rumbleNoPower = 0;
 
