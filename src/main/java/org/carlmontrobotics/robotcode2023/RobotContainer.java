@@ -14,7 +14,6 @@ import org.carlmontrobotics.lib199.path.PPRobotPath;
 import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
 import org.carlmontrobotics.robotcode2023.Constants.OI.Driver;
 import org.carlmontrobotics.robotcode2023.Constants.OI.Manipulator;
-import org.carlmontrobotics.robotcode2023.Constants.Roller.RollerMode;
 import org.carlmontrobotics.robotcode2023.commands.AlignChargingStation;
 import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;
 import org.carlmontrobotics.robotcode2023.commands.DriveOverChargeStation;
@@ -76,7 +75,7 @@ public class RobotContainer {
       eventMap.put("Cone High Pos.", new SetArmWristGoalPreset(GoalPos.HIGH, () -> false, () -> false, arm));
       // Command fakeArmCommand = new InstantCommand(() -> System.err.println("==============Store================="), arm);
       // eventMap.put("Stored Pos.", new SequentialCommandGroup(fakeArmCommand, new WaitCommand(2)));
-      eventMap.put("Run Cube Intake", new SequentialCommandGroup(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm), new RunRoller(roller, RollerMode.INTAKE_CUBE)));
+      eventMap.put("Run Cube Intake", new SequentialCommandGroup(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, () -> false, arm), new RunRoller(roller, Roller.RollerMode.INTAKE_CUBE)));
       eventMap.put("DriveOverChargeStation", new DriveOverChargeStation(drivetrain));
       eventMap.put("Extend Arm High Cube", new SetArmWristGoalPreset(GoalPos.HIGH, () -> true, () -> false, arm));
       eventMap.put("Extend Arm Mid Cube", new SetArmWristGoalPreset(GoalPos.MID, () -> true, () -> false, arm));
@@ -87,9 +86,9 @@ public class RobotContainer {
         new SetArmWristGoalPreset(GoalPos.HIGH, () -> true, () -> false, arm),
         new PrintCommand("================================Cube High Pos. Ended==================================")
         ));
-      eventMap.put("Run Cube Outtake", new RunRoller(roller, RollerMode.OUTTAKE_CUBE));
-      eventMap.put("Run Cone Intake", new SequentialCommandGroup(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, () -> false, arm), new RunRoller(roller, RollerMode.INTAKE_CONE)));
-      eventMap.put("Run Cone Outtake", new RunRoller(roller, RollerMode.OUTTAKE_CONE));
+      eventMap.put("Run Cube Outtake", new RunRoller(roller, Roller.RollerMode.OUTTAKE_CUBE));
+      eventMap.put("Run Cone Intake", new SequentialCommandGroup(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, () -> false, arm), new RunRoller(roller, Roller.RollerMode.INTAKE_CONE)));
+      eventMap.put("Run Cone Outtake", new RunRoller(roller, Roller.RollerMode.OUTTAKE_CONE));
       //eventMap.put("Move Arm Back", new SetArmWristPositionV3((-5*Math.PI)/8, Constants.Arm.WRIST_STOW_POS_RAD, arm));
       eventMap.put("Cone Intake Pos.", new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, () -> false, arm));
       eventMap.put("Cube Intake Pos.", new SequentialCommandGroup(
@@ -171,23 +170,23 @@ public class RobotContainer {
     new POVButton(manipulatorController, Manipulator.substationPickupPOV).onTrue(new SetArmWristGoalPreset(GoalPos.STORED, isCube, isFront, arm));
 		
     new POVButton(manipulatorController, Manipulator.intakeCubePOV).onTrue(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, isFront, arm));
-    new POVButton(manipulatorController, Manipulator.intakeConePOV).onTrue(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, isFront, arm).andThen(new RunRoller(roller, RollerMode.INTAKE_CONE)));
-    new POVButton(manipulatorController, Manipulator.substationPickupPOV).onTrue(new SetArmWristGoalPreset(GoalPos.SUBSTATION, isCube, isFront, arm).andThen(new RunRoller(roller, RollerMode.INTAKE_CONE)));
-    new POVButton(manipulatorController, Manipulator.intakeCubePOV).onTrue(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, isFront, arm).andThen(new RunRoller(roller, RollerMode.INTAKE_CUBE)));
-    new JoystickButton(manipulatorController, Manipulator.stopRollerButton).onTrue(new RunRoller(roller, RollerMode.STOP));
+    new POVButton(manipulatorController, Manipulator.intakeConePOV).onTrue(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> false, isFront, arm).andThen(new RunRoller(roller, Roller.RollerMode.INTAKE_CONE)));
+    new POVButton(manipulatorController, Manipulator.substationPickupPOV).onTrue(new SetArmWristGoalPreset(GoalPos.SUBSTATION, isCube, isFront, arm).andThen(new RunRoller(roller, Roller.RollerMode.INTAKE_CONE)));
+    new POVButton(manipulatorController, Manipulator.intakeCubePOV).onTrue(new SetArmWristGoalPreset(GoalPos.INTAKE, () -> true, isFront, arm).andThen(new RunRoller(roller, Roller.RollerMode.INTAKE_CUBE)));
+    new JoystickButton(manipulatorController, Manipulator.stopRollerButton).onTrue(new RunRoller(roller, Roller.RollerMode.STOP));
     
     // axisTrigger(manipulatorController, Manipulator.rollerIntakeConeButton)
     //   .onTrue(new RunRoller(roller, RollerMode.INTAKE_CONE, Constants.Roller.conePickupColor));
     axisTrigger(manipulatorController, Manipulator.rollerIntakeCubeButton)
       .onTrue(new ConditionalCommand(
-        new RunRoller(roller, RollerMode.INTAKE_CUBE), 
-        new RunRoller(roller, RollerMode.OUTTAKE_CUBE), 
+        new RunRoller(roller, Roller.RollerMode.INTAKE_CUBE), 
+        new RunRoller(roller, Roller.RollerMode.OUTTAKE_CUBE), 
         isIntake
       )); 
     axisTrigger(manipulatorController, Manipulator.rollerIntakeConeButton)
       .onTrue(new ConditionalCommand(
-        new RunRoller(roller, RollerMode.INTAKE_CONE), 
-        new RunRoller(roller, RollerMode.OUTTAKE_CONE), 
+        new RunRoller(roller, Roller.RollerMode.INTAKE_CONE), 
+        new RunRoller(roller, Roller.RollerMode.OUTTAKE_CONE), 
         isIntake
       ));
 

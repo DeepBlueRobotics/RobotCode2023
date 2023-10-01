@@ -1,8 +1,7 @@
 package org.carlmontrobotics.robotcode2023.commands;
 
-import org.carlmontrobotics.robotcode2023.Constants.Roller.GameObject;
-import org.carlmontrobotics.robotcode2023.Constants.Roller.RollerMode;
 import org.carlmontrobotics.robotcode2023.subsystems.Roller;
+import org.carlmontrobotics.robotcode2023.Constants.Roller.GameObject;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -12,9 +11,9 @@ public class RunRoller extends CommandBase {
 
     private final Roller roller;
     private final Timer timer = new Timer();
-    private final RollerMode mode;
+    private final Roller.RollerMode mode;
 
-    public RunRoller(Roller roller, RollerMode mode) {
+    public RunRoller(Roller roller, Roller.RollerMode mode) {
         addRequirements(this.roller = roller);
         this.mode = mode;
     }
@@ -23,7 +22,7 @@ public class RunRoller extends CommandBase {
     public void initialize() {
         System.err.println("=============================RunRoller is Started=============================");
 
-        if (mode.getSpeed() > 0) { // should not interrupt command to stop rollers
+        if (mode.speed > 0) { // should not interrupt command to stop rollers
             if(roller.hasGamePiece() && isIntake()) cancel();
             if(!roller.hasGamePiece() && !isIntake()) cancel(); 
         }
@@ -38,8 +37,10 @@ public class RunRoller extends CommandBase {
     @Override
     public void end(boolean interrupted) {
         // keep it running if its a cone
-        if (mode.obj != GameObject.CONE && !interrupted)
-            roller.setSpeed(0);
+        if (mode.obj != GameObject.CONE && !interrupted) {
+            mode.speed = 0;
+						roller.setRollerMode(mode);
+				}
         timer.stop();
         System.err.println("=============================RunRoller has ended==========================================================");
 
@@ -48,7 +49,7 @@ public class RunRoller extends CommandBase {
     @Override
     public boolean isFinished() {
 
-        if(mode.getSpeed() == 0) return true;
+        if(mode.speed == 0) return true;
 
         double time = timer.get();
 

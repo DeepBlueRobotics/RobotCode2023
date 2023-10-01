@@ -89,15 +89,15 @@ public class Roller extends SubsystemBase {
     }
 
     public void setRollerMode(RollerMode mode) {
-        setSpeed(mode.getSpeed());
+        setSpeed(mode.speed);
         setLedColor(mode.ledColor);
     }
 
     public void putRollerConstsOnSmartDashboard() {
-        SmartDashboard.putNumber("Intake Cone Speed", RollerMode.INTAKE_CONE.getSpeed());
-        SmartDashboard.putNumber("Outtake Cone Speed", RollerMode.OUTTAKE_CONE.getSpeed());
-        SmartDashboard.putNumber("Intake Cube Speed", RollerMode.INTAKE_CUBE.getSpeed());
-        SmartDashboard.putNumber("Outtake Cube Speed", RollerMode.OUTTAKE_CUBE.getSpeed());
+        SmartDashboard.putNumber("Intake Cone Speed", RollerMode.INTAKE_CONE.speed);
+        SmartDashboard.putNumber("Outtake Cone Speed", RollerMode.OUTTAKE_CONE.speed);
+        SmartDashboard.putNumber("Intake Cube Speed", RollerMode.INTAKE_CUBE.speed);
+        SmartDashboard.putNumber("Outtake Cube Speed", RollerMode.OUTTAKE_CUBE.speed);
         SmartDashboard.putNumber("Intake Cone Time", RollerMode.INTAKE_CONE.time);
         SmartDashboard.putNumber("Outtake Cone Time", RollerMode.OUTTAKE_CONE.time);
         SmartDashboard.putNumber("Intake Cube Time", RollerMode.INTAKE_CUBE.time);
@@ -105,10 +105,10 @@ public class Roller extends SubsystemBase {
     }
 
     public void getRollerConstsOnSmartDashboard() {
-        RollerMode.INTAKE_CONE.setSpeed(SmartDashboard.getNumber("Intake Cone Speed", RollerMode.INTAKE_CONE.getSpeed()));
-        RollerMode.OUTTAKE_CONE.setSpeed(SmartDashboard.getNumber("Outtake Cone Speed", RollerMode.OUTTAKE_CONE.getSpeed()));
-        RollerMode.INTAKE_CUBE.setSpeed(SmartDashboard.getNumber("Intake Cube Speed", RollerMode.INTAKE_CUBE.getSpeed()));
-        RollerMode.OUTTAKE_CUBE.setSpeed(SmartDashboard.getNumber("Outtake Cube Speed", RollerMode.OUTTAKE_CUBE.getSpeed()));
+        RollerMode.INTAKE_CONE.speed = SmartDashboard.getNumber("Intake Cone Speed", RollerMode.INTAKE_CONE.speed);
+        RollerMode.OUTTAKE_CONE.speed = SmartDashboard.getNumber("Outtake Cone Speed", RollerMode.OUTTAKE_CONE.speed);
+        RollerMode.INTAKE_CUBE.speed = SmartDashboard.getNumber("Intake Cube Speed", RollerMode.INTAKE_CUBE.speed);
+        RollerMode.OUTTAKE_CUBE.speed = SmartDashboard.getNumber("Outtake Cube Speed", RollerMode.OUTTAKE_CUBE.speed);
         RollerMode.INTAKE_CONE.time = SmartDashboard.getNumber("Intake Cone Time", RollerMode.INTAKE_CONE.time);
         RollerMode.OUTTAKE_CONE.time = SmartDashboard.getNumber("Outtake Cone Time", RollerMode.OUTTAKE_CONE.time);
         RollerMode.INTAKE_CUBE.time = SmartDashboard.getNumber("Intake Cube Time", RollerMode.INTAKE_CUBE.time);
@@ -118,5 +118,32 @@ public class Roller extends SubsystemBase {
     public double getPosition() {
         return motor.getEncoder().getPosition();
     }
+		
+	  // TODO: Determine actual speeds/timings for roller
+		public static class RollerMode {
+				public static RollerMode INTAKE_CONE = new RollerMode(-0.5, .5, GameObject.CONE, conePickupColor);
+				public static RollerMode INTAKE_CUBE = new RollerMode(0.4, .25, GameObject.CUBE, cubePickupColor);
+				// The obj indicates which game object the roller is trying to intake
+				// if obj == NONE, that means it is trying to outtake rather than intake
+				public static RollerMode OUTTAKE_CONE = new RollerMode(0.5, .5, GameObject.NONE, defaultColor);
+				public static RollerMode OUTTAKE_CUBE = new RollerMode(-0.5, .5, GameObject.NONE, defaultColor);
+				public static RollerMode STOP = new RollerMode(0, .1, GameObject.NONE, defaultColor);
+				public double speed;
+				public double time;
+				public GameObject obj;
+				public Color ledColor;
 
+				/**
+				 * @param speed  A number between -1 and 1
+				 * @param time   Amount of time in seconds to keep the motor running after
+				 *               distance sensor has detected an object
+				 * @param intake Whether the roller is outtaking or intaking
+				 */
+				public RollerMode(double speed, double time, GameObject obj, Color ledColor) {
+						this.speed = speed;
+						this.time = time;
+						this.obj = obj;
+						this.ledColor = ledColor;
+				}
+		}
 }
