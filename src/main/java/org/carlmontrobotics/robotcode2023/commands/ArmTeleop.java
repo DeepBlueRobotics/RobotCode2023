@@ -22,7 +22,7 @@ public class ArmTeleop extends CommandBase {
   private Arm armSubsystem;
   private DoubleSupplier arm;
   private DoubleSupplier wrist;
-	private BooleanSupplier baby;//is robot in baby (safe) mode?
+  private BooleanSupplier baby; // is robot in baby (safe) mode?
   private double lastTime = 0;
 
   public ArmTeleop(Arm armSubsystem, DoubleSupplier arm, DoubleSupplier wrist, BooleanSupplier baby) {
@@ -30,7 +30,7 @@ public class ArmTeleop extends CommandBase {
     addRequirements(this.armSubsystem = armSubsystem);
     this.arm = arm;
     this.wrist = wrist;
-		this.baby = baby;
+    this.baby = baby;
   }
 
   // Called when the command is initially scheduled.
@@ -56,11 +56,14 @@ public class ArmTeleop extends CommandBase {
     goalArmRad = MathUtil.clamp(goalArmRad, ARM_LOWER_LIMIT_RAD, ARM_UPPER_LIMIT_RAD);
     goalWristRad = MathUtil.clamp(goalWristRad, WRIST_LOWER_LIMIT_RAD, WRIST_UPPER_LIMIT_RAD);
 
-    // Clamp the goal to within a certain range of the current position to prevent "lag"
-    goalArmRad = MathUtil.clamp(goalArmRad, armSubsystem.getArmPos() - ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD, armSubsystem.getArmPos() + ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
-    goalWristRad = MathUtil.clamp(goalWristRad, armSubsystem.getWristPos() - ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD, armSubsystem.getWristPos() + ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
+    // Clamp the goal to within a certain range of the current position to prevent
+    // "lag"
+    goalArmRad = MathUtil.clamp(goalArmRad, armSubsystem.getArmPos() - ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD,
+        armSubsystem.getArmPos() + ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
+    goalWristRad = MathUtil.clamp(goalWristRad, armSubsystem.getWristPos() - ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD,
+        armSubsystem.getWristPos() + ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD);
 
-    if((speeds[0] != 0 || speeds[1] != 0) && !DriverStation.isAutonomous()) {
+    if ((speeds[0] != 0 || speeds[1] != 0) && !DriverStation.isAutonomous()) {
       armSubsystem.setArmTarget(goalArmRad, armSubsystem.getCurrentArmGoal().velocity);
       armSubsystem.setWristTarget(goalWristRad, armSubsystem.getCurrentWristGoal().velocity);
     }
@@ -70,13 +73,13 @@ public class ArmTeleop extends CommandBase {
 
   // Copy and pasted from drivetrain, handles input from joysticks
   public double[] getRequestedSpeeds() {
-		// Sets all values less than or equal to a very small value (determined by the
+    // Sets all values less than or equal to a very small value (determined by the
     // idle joystick state) to zero.
-		
+
     double rawArmVel, rawWristVel;
-		// prep maximum velocity variable
-		double[] maxFF = baby.getAsBoolean() ? MAX_FF_VEL_BABY : MAX_FF_VEL_MANUAL;
-    
+    // prep maximum velocity variable
+    double[] maxFF = baby.getAsBoolean() ? MAX_FF_VEL_BABY : MAX_FF_VEL_MANUAL;
+
     if (Math.abs(arm.getAsDouble()) <= Constants.OI.JOY_THRESH)
       rawArmVel = 0.0;
     else
@@ -87,7 +90,7 @@ public class ArmTeleop extends CommandBase {
     else
       rawWristVel = maxFF[WRIST] * wrist.getAsDouble();
 
-    return new double[] {rawArmVel, rawWristVel};
+    return new double[] { rawArmVel, rawWristVel };
   }
 
   // Called once the command ends or is interrupted.
