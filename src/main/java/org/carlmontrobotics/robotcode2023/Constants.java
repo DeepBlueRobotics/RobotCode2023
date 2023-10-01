@@ -31,7 +31,7 @@ public final class Constants {
     public static final class Drivetrain {
 
         //#region Subsystem Constants
-        
+
         public static final double wheelBase = Units.inchesToMeters(19.75);
         public static final double trackWidth = Units.inchesToMeters(28.75);
         // "swerveRadius" is the distance from the center of the robot to one of the modules
@@ -51,10 +51,10 @@ public final class Constants {
         public static final double maxStrafe = maxSpeed;
        // seconds it takes to go from 0 to 12 volts(aka MAX)
         public static final double secsPer12Volts = 0.1;
-        
-        
-        
-        
+
+
+
+
         // maxRCW is the angular velocity of the robot.
         // Calculated by looking at one of the motors and treating it as a point mass moving around in a circle.
         // Tangential speed of this point mass is maxSpeed and the radius of the circle is sqrt((wheelBase/2)^2 + (trackWidth/2)^2)
@@ -380,6 +380,7 @@ public final class Constants {
         //#endregion
 
         //#region Command Constants
+
         //#endregion
 
         public static enum GameObject {
