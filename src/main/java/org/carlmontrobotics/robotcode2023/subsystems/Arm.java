@@ -54,9 +54,11 @@ public class Arm extends SubsystemBase {
     // rad, rad/s
     public static TrapezoidProfile.State[] goalState = { new TrapezoidProfile.State(-Math.PI / 2, 0), new TrapezoidProfile.State(0, 0) };
 
+    double lastWristPos;
     private double lastArmPos;
     private double lastMeasuredTime;
     private boolean isArmEncoderConnected = false;
+    private boolean isWristEncoderConnected = false;
 
     public Arm() {
         Timer.getFPGATimestamp();
@@ -114,9 +116,17 @@ public class Arm extends SubsystemBase {
         if (currentArmPos != lastArmPos) {
             lastMeasuredTime = currTime;
             lastArmPos = currentArmPos;
+            
+            double currentWristPos = getWristPos();
+        if (currentWristPos != lastWristPos) {
+            lastMeasuredTime = currTime;
+            lastWristPos = currentWristPos;
         }
         isArmEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
         SmartDashboard.putBoolean("ArmEncoderConnected", isArmEncoderConnected);
+        
+        isWristEncoderConnected = currTime - lastMeasuredTime < DISCONNECTED_ENCODER_TIMEOUT_SEC;
+        SmartDashboard.putBoolean("WristEncoderConnected", isWristEncoderConnected);
 			
 				//TODO: is RobotContainer live or do you need supplier functions
         armConstraints = new TrapezoidProfile.Constraints(
@@ -162,6 +172,7 @@ public class Arm extends SubsystemBase {
         driveWrist(wristProfile.calculate(wristProfileTimer.get()));
 
         autoCancelArmCommand();
+    }
     }
 
     public void autoCancelArmCommand() {
