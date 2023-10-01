@@ -23,8 +23,10 @@ public class RunRoller extends CommandBase {
         System.err.println("=============================RunRoller is Started=============================");
 
         if (mode.speed > 0) { // should not interrupt command to stop rollers
-            if(roller.hasGamePiece() && isIntake()) cancel();
-            if(!roller.hasGamePiece() && !isIntake()) cancel(); 
+            if (roller.hasGamePiece() && isIntake())
+                cancel();
+            if (!roller.hasGamePiece() && !isIntake())
+                cancel();
         }
         System.err.println("=============================RunRoller is initialized=============================");
         timer.reset();
@@ -32,24 +34,27 @@ public class RunRoller extends CommandBase {
     }
 
     @Override
-    public void execute() {}
+    public void execute() {
+    }
 
     @Override
     public void end(boolean interrupted) {
         // keep it running if its a cone
         if (mode.obj != GameObject.CONE && !interrupted) {
             mode.speed = 0;
-						roller.setRollerMode(mode);
-				}
+            roller.setRollerMode(mode);
+        }
         timer.stop();
-        System.err.println("=============================RunRoller has ended==========================================================");
+        System.err.println(
+                "=============================RunRoller has ended==========================================================");
 
     }
 
     @Override
     public boolean isFinished() {
 
-        if(mode.speed == 0) return true;
+        if (mode.speed == 0)
+            return true;
 
         double time = timer.get();
 

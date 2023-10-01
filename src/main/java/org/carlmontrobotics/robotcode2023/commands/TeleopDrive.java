@@ -10,7 +10,6 @@ package org.carlmontrobotics.robotcode2023.commands;
 import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.*;
 import org.carlmontrobotics.robotcode2023.RobotContainer.DriverMode;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -57,24 +56,30 @@ public class TeleopDrive extends CommandBase {
   }
 
   public double[] getRequestedSpeeds() {
-    // Sets all values less than or equal to a very small value (determined by the idle joystick state) to zero.
-    // Used to make sure that the robot does not try to change its angle unless it is moving,
+    // Sets all values less than or equal to a very small value (determined by the
+    // idle joystick state) to zero.
+    // Used to make sure that the robot does not try to change its angle unless it
+    // is moving,
     double forward = fwd.getAsDouble();
     double strafe = str.getAsDouble();
     double rotateClockwise = rcw.getAsDouble();
-    if (Math.abs(forward) <= Constants.OI.JOY_THRESH) forward = 0.0;
-    else forward *= maxForward;
-    if (Math.abs(strafe) <= Constants.OI.JOY_THRESH) strafe = 0.0;
-    else strafe *= maxStrafe;
-    if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH) rotateClockwise = 0.0;
-    else rotateClockwise *= maxRCW;
+    if (Math.abs(forward) <= Constants.OI.JOY_THRESH)
+      forward = 0.0;
+    else
+      forward *= maxForward;
+    if (Math.abs(strafe) <= Constants.OI.JOY_THRESH)
+      strafe = 0.0;
+    else
+      strafe *= maxStrafe;
+    if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH)
+      rotateClockwise = 0.0;
+    else
+      rotateClockwise *= maxRCW;
 
-    double driveMultiplier = ((DriverMode)mode.get()).isBaby() ? kBabyDriveSpeed : (
-														 ((DriverMode)mode.get()).isSlow() ? kSlowDriveSpeed : kNormalDriveSpeed
-		);
-    double rotationMultiplier = ((DriverMode)mode.get()).isBaby() ? kBabyTurnSpeed : (
-														    ((DriverMode)mode.get()).isSlow() ? kSlowDriveRotation : kNormalDriveRotation
-		);
+    double driveMultiplier = ((DriverMode) mode.get()).isBaby() ? kBabyDriveSpeed
+        : (((DriverMode) mode.get()).isSlow() ? kSlowDriveSpeed : kNormalDriveSpeed);
+    double rotationMultiplier = ((DriverMode) mode.get()).isBaby() ? kBabyTurnSpeed
+        : (((DriverMode) mode.get()).isSlow() ? kSlowDriveRotation : kNormalDriveRotation);
 
     forward *= driveMultiplier;
     strafe *= driveMultiplier;
@@ -84,8 +89,9 @@ public class TeleopDrive extends CommandBase {
     double accelerationX = (forward - currentForwardVel) / robotPeriod;
     double accelerationY = (strafe - currentStrafeVel) / robotPeriod;
     double translationalAcceleration = Math.hypot(accelerationX, accelerationY);
-    if(translationalAcceleration > autoMaxAccelMps2) {
-      Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2, Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
+    if (translationalAcceleration > autoMaxAccelMps2) {
+      Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2,
+          Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
       Translation2d limitedVelocityVector = limitedAccelerationVector.times(robotPeriod);
       currentForwardVel += limitedVelocityVector.getX();
       currentStrafeVel += limitedVelocityVector.getY();
@@ -96,13 +102,16 @@ public class TeleopDrive extends CommandBase {
 
     // ATM, there is no rotational acceleration limit
 
-    // If the above math works, no velocity should be greater than the max velocity, so we don't need to limit it.
+    // If the above math works, no velocity should be greater than the max velocity,
+    // so we don't need to limit it.
 
-    return new double[] {currentForwardVel, currentStrafeVel, -rotateClockwise};
+    return new double[] { currentForwardVel, currentStrafeVel, -rotateClockwise };
   }
 
   public boolean hasDriverInput() {
-    return Math.abs(fwd.getAsDouble()) > Constants.OI.JOY_THRESH || Math.abs(str.getAsDouble()) > Constants.OI.JOY_THRESH || Math.abs(rcw.getAsDouble()) > Constants.OI.JOY_THRESH;
+    return Math.abs(fwd.getAsDouble()) > Constants.OI.JOY_THRESH
+        || Math.abs(str.getAsDouble()) > Constants.OI.JOY_THRESH
+        || Math.abs(rcw.getAsDouble()) > Constants.OI.JOY_THRESH;
   }
 
   // Called once the command ends or is interrupted.
