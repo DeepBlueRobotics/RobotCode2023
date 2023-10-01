@@ -8,9 +8,11 @@
 package org.carlmontrobotics.robotcode2023.commands;
 
 import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.*;
+import org.carlmontrobotics.robotcode2023.RobotContainer.DriverMode;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import org.carlmontrobotics.robotcode2023.Constants;
 import org.carlmontrobotics.robotcode2023.Robot;
@@ -27,21 +29,19 @@ public class TeleopDrive extends CommandBase {
   private DoubleSupplier fwd;
   private DoubleSupplier str;
   private DoubleSupplier rcw;
-  private BooleanSupplier slow;
-  private BooleanSupplier baby;
+  private Supplier mode;
   private double currentForwardVel = 0;
   private double currentStrafeVel = 0;
 
   /**
    * Creates a new TeleopDrive.
    */
-  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow, BooleanSupplier baby) {
+  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, Supplier mode) {
     addRequirements(this.drivetrain = drivetrain);
     this.fwd = fwd;
     this.str = str;
     this.rcw = rcw;
-    this.slow = slow;
-    this.baby = baby;
+    this.mode = mode;
   }
 
   // Called when the command is initially scheduled.
@@ -69,11 +69,11 @@ public class TeleopDrive extends CommandBase {
     if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH) rotateClockwise = 0.0;
     else rotateClockwise *= maxRCW;
 
-    double driveMultiplier = baby.getAsBoolean() ? kBabyDriveSpeed : (
-														 slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed
+    double driveMultiplier = ((DriverMode)mode.get()).isBaby() ? kBabyDriveSpeed : (
+														 ((DriverMode)mode.get()).isSlow() ? kSlowDriveSpeed : kNormalDriveSpeed
 		);
-    double rotationMultiplier = baby.getAsBoolean() ? kBabyTurnSpeed : (
-														 slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation
+    double rotationMultiplier = ((DriverMode)mode.get()).isBaby() ? kBabyTurnSpeed : (
+														    ((DriverMode)mode.get()).isSlow() ? kSlowDriveRotation : kNormalDriveRotation
 		);
 
     forward *= driveMultiplier;

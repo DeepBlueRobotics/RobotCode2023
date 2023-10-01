@@ -132,12 +132,12 @@ public class Arm extends SubsystemBase {
         
 				//TODO: is RobotContainer live or do you need supplier functions
         armConstraints = new TrapezoidProfile.Constraints(
-          RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
-					RobotContainer.isdriverchild ? MAX_FF_ACCEL_BABY[0] : MAX_FF_ACCEL[0]
+          (RobotContainer.driverMode.isBaby()) ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
+					(RobotContainer.driverMode.isBaby()) ? MAX_FF_ACCEL_BABY[0] : MAX_FF_ACCEL[0]
         );
         wristConstraints = new TrapezoidProfile.Constraints(
-          RobotContainer.isdriverchild ? MAX_FF_VEL_BABY[1] : MAX_FF_VEL_AUTO[1],
-					RobotContainer.isdriverchild ? MAX_FF_ACCEL_BABY[1] : MAX_FF_ACCEL[1]
+          (RobotContainer.driverMode.isBaby()) ? MAX_FF_VEL_BABY[1] : MAX_FF_VEL_AUTO[1],
+					(RobotContainer.driverMode.isBaby()) ? MAX_FF_ACCEL_BABY[1] : MAX_FF_ACCEL[1]
         );
         armPID.setP(kP[ARM]);
         armPID.setI(kI[ARM]);

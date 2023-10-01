@@ -44,7 +44,13 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     MotorErrors.printSparkMaxErrorMessages();
 
-    RobotContainer.isdriverchild = SmartDashboard.getBoolean("safeMode", false);
+    //set mode to baby if baby was true
+		//else but don't set mode to norm if slow was true
+		if (SmartDashboard.getBoolean("safeMode", false)) {
+			RobotContainer.driverMode = RobotContainer.DriverMode.BABY;
+		} else if (RobotContainer.driverMode.isSlow()) {
+			RobotContainer.driverMode = RobotContainer.DriverMode.NORM;
+		}
   }
 
 

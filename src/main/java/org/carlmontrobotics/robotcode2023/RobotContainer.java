@@ -50,7 +50,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class RobotContainer {
   
-  public static boolean isdriverchild = false;
+  public static DriverMode driverMode = DriverMode.NORM;
 
   public final GenericHID driverController = new GenericHID(Driver.port);
   public final GenericHID manipulatorController = new GenericHID(Manipulator.port);
@@ -133,17 +133,16 @@ public class RobotContainer {
       () -> inputProcessing(getStickValue(driverController, Axis.kLeftY)),
       () -> inputProcessing(getStickValue(driverController, Axis.kLeftX)),
       () -> inputProcessing(getStickValue(driverController, Axis.kRightX)),
-      () -> driverController.getRawButton(Driver.slowDriveButton),
-      () -> {return isdriverchild;}
+      () -> {return driverMode;}
     ));
 
     configureButtonBindingsDriver();
     configureButtonBindingsManipulator();
     arm.setDefaultCommand(new ArmTeleop(
       arm,
-      () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY)));},
-      () -> {return (isdriverchild ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY)));},
-			() -> {return isdriverchild;}
+      () -> {return (driverMode.isBaby() ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kLeftY)));},
+      () -> {return (driverMode.isBaby() ? 0 : inputProcessing(getStickValue(manipulatorController, Axis.kRightY)));},
+			() -> {return driverMode.isBaby();}
     ));
   }
   private void configureButtonBindingsDriver() {
@@ -154,6 +153,9 @@ public class RobotContainer {
     new JoystickButton(driverController, Driver.rotateToFieldRelativeAngle90Deg).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(-90), drivetrain));
     new JoystickButton(driverController, Driver.rotateToFieldRelativeAngle180Deg).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(180), drivetrain));
     new JoystickButton(driverController, Driver.rotateToFieldRelativeAngle270Deg).onTrue(new RotateToFieldRelativeAngle(Rotation2d.fromDegrees(90), drivetrain));
+		
+		new JoystickButton(driverController, Driver.slowDriveButton).whileTrue(new InstantCommand(() -> driverMode.isSlow()));
+    
   }
 
   private void configureButtonBindingsManipulator() {
@@ -264,4 +266,10 @@ public class RobotContainer {
     return new Trigger(() -> Math.abs(getStickValue(stick, axis)) > MIN_AXIS_TRIGGER_VALUE);
   }
   
+	public static enum DriverMode {
+				NORM,SLOW,BABY;
+				public boolean isNorm(){ return this==DriverMode.NORM; }
+				public boolean isSlow(){ return this==DriverMode.SLOW; }
+				public boolean isBaby(){ return this==DriverMode.BABY; }
+		}
 }
