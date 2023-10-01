@@ -61,7 +61,6 @@ public class Arm extends SubsystemBase {
     private boolean isWristEncoderConnected = false;
 
     public Arm() {
-        Timer.getFPGATimestamp();
         armMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
         wristMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 20);
         armMotor.setInverted(motorInverted[ARM]);
