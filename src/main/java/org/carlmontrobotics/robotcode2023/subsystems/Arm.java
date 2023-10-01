@@ -113,27 +113,6 @@ public class Arm extends SubsystemBase {
         if (DriverStation.isDisabled())
             resetGoal();
 
-        double currTime = Timer.getFPGATimestamp();
-        SmartDashboard.putNumber("Current Time", currTime);
-        SmartDashboard.putNumber("Last Arm Update (s)", lastMeasuredArmTime);
-
-        // when the value is different
-        double currentArmPos = getArmPos();
-        if (currentArmPos != lastArmPos) {
-            lastMeasuredArmTime = currTime;
-            lastArmPos = currentArmPos;
-        }
-        double currentWristPos = getWristPos();
-        if (currentWristPos != lastWristPos) {
-            lastMeasuredWristTime = currTime;
-            lastWristPos = currentWristPos;
-        }
-        isArmEncoderConnected = (currTime - lastMeasuredArmTime) < DISCONNECTED_ENCODER_TIMEOUT_SEC;
-        SmartDashboard.putBoolean("ArmEncoderConnected", isArmEncoderConnected);
-
-        isWristEncoderConnected = (currTime - lastMeasuredWristTime) < DISCONNECTED_ENCODER_TIMEOUT_SEC;
-        SmartDashboard.putBoolean("WristEncoderConnected", isWristEncoderConnected);
-
         // TODO: is RobotContainer live or do you need supplier functions
         armConstraints = new TrapezoidProfile.Constraints(
                 (RobotContainer.driverMode.isBaby()) ? MAX_FF_VEL_BABY[0] : MAX_FF_VEL_AUTO[0],
@@ -171,6 +150,33 @@ public class Arm extends SubsystemBase {
 
         SmartDashboard.putNumber("ArmPos", getArmPos());
         SmartDashboard.putNumber("WristPos", getWristPos());
+
+        /*
+         * The code below detects whether an encoder is disconnected. When it has detected that the encoder
+         * is disconnected, it will stop the motors.
+         * The way it detects an encoder is connected is if the value the encoder returns does not change
+         * for DISCONNECTED_ENCODER_TIMEOUT_SECs. Even when the arm stays still, there is a lot of "noise"
+         * in the encoder. We can reliably say that the encoder is disconnected if it remains the exact same.
+         */
+        double currTime = Timer.getFPGATimestamp();
+        SmartDashboard.putNumber("Current Time", currTime);
+        SmartDashboard.putNumber("Last Arm Update (s)", lastMeasuredArmTime);
+
+        double currentArmPos = getArmPos();
+        if (currentArmPos != lastArmPos) {
+            lastMeasuredArmTime = currTime;
+            lastArmPos = currentArmPos;
+        }
+        double currentWristPos = getWristPos();
+        if (currentWristPos != lastWristPos) {
+            lastMeasuredWristTime = currTime;
+            lastWristPos = currentWristPos;
+        }
+        isArmEncoderConnected = (currTime - lastMeasuredArmTime) < DISCONNECTED_ENCODER_TIMEOUT_SEC;
+        SmartDashboard.putBoolean("ArmEncoderConnected", isArmEncoderConnected);
+
+        isWristEncoderConnected = (currTime - lastMeasuredWristTime) < DISCONNECTED_ENCODER_TIMEOUT_SEC;
+        SmartDashboard.putBoolean("WristEncoderConnected", isWristEncoderConnected);
 
         if (isArmEncoderConnected)
             driveArm(armProfile.calculate(armProfileTimer.get()));
