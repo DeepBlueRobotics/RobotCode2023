@@ -46,6 +46,13 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
     public final float initPitch;
     public final float initRoll;
+	
+		//TEMP
+		public double sumWant = 0.;
+		public double sumHave = 0;
+		public final int cycleDur = 5; public int cCycle=0;
+		//we find how much slower BL moves, and apply the inverse fraction to speed it up correctly
+		public double limpFixMult=0;
 
     public Drivetrain() {
 
@@ -151,6 +158,18 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         // SmartDashboard.putNumber("Compass Offset", compassOffset);
         // SmartDashboard.putBoolean("Current Magnetic Field Disturbance",
         // gyro.isMagneticDisturbance());
+				cCycle++;
+				if (cCycle==cycleDur){
+					cCycle=0;
+//					SwerveModule bl = modules[2];
+					sumWant+=(/*avg of all CORRECT motor speeds (swerve is not always equal, this is not real math to do this)*/
+							modules[0].getCurrentSpeed()+
+							modules[1].getCurrentSpeed()+
+							modules[3].getCurrentSpeed())/3;
+					sumHave+=modules[2].getCurrentSpeed();
+					
+					limpFixMult=sumWant/sumHave;
+				}
     }
 
     public void autoCancelDtCommand() {
@@ -206,7 +225,11 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         for (int i = 0; i < 4; i++) {
             moduleStates[i] = SwerveModuleState.optimize(moduleStates[i],
                     Rotation2d.fromDegrees(modules[i].getModuleAngle()));
-            modules[i].move(moduleStates[i].speedMetersPerSecond, moduleStates[i].angle.getDegrees());
+						if (i==2) {
+							modules[i].move(moduleStates[i].speedMetersPerSecond*limpFixMult, moduleStates[i].angle.getDegrees());
+						}else{
+							modules[i].move(moduleStates[i].speedMetersPerSecond, moduleStates[i].angle.getDegrees());	
+						}
         }
     }
 
