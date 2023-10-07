@@ -46,12 +46,6 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
 
     public final float initPitch;
     public final float initRoll;
-	
-		//TEMP
-		public double[] sumVel = new double[] {0.,0.,0.,0.};
-		public int velCount = 0;
-		public final int cycleDur = 5; public int cCycle=0;
-		
 
     public Drivetrain() {
 
@@ -149,7 +143,7 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         // SmartDashboard.putNumber("Pitch", gyro.getPitch());
         // SmartDashboard.putNumber("Roll", gyro.getRoll());
        SmartDashboard.putNumber("Raw gyro angle", gyro.getAngle());
-       SmartDashboard.putNumber("Robot Heading", getHeading());
+        SmartDashboard.putNumber("Robot Heading", getHeading());
         // SmartDashboard.putNumber("AdjRoll", gyro.getPitch() - initPitch);
         // SmartDashboard.putNumber("AdjPitch", gyro.getRoll() - initRoll);
         // fieldOriented = SmartDashboard.getBoolean("Field Oriented", true);
@@ -157,20 +151,6 @@ public class Drivetrain extends SubsystemBase implements SwerveDriveInterface {
         // SmartDashboard.putNumber("Compass Offset", compassOffset);
         // SmartDashboard.putBoolean("Current Magnetic Field Disturbance",
         // gyro.isMagneticDisturbance());
-				cCycle++;
-				if (cCycle==cycleDur){
-					cCycle=0;
-					velCount++;
-					
-					for (int i=0;i<4;i++) {
-						SwerveModule sm = modules[i];
-						sumVel[i] += sm.getCurrentSpeed();
-					}
-				}
-				SmartDashboard.putNumber("avg speed fl", sumVel[0]/velCount);
-				SmartDashboard.putNumber("avg speed fr", sumVel[1]/velCount);
-				SmartDashboard.putNumber("avg speed bl", sumVel[2]/velCount);
-				SmartDashboard.putNumber("avg speed br", sumVel[3]/velCount);
     }
 
     public void autoCancelDtCommand() {
