@@ -112,18 +112,16 @@ public class RobotContainer {
 
     autoPaths = new Command[] {
       null,
-      //Mid Basic: drive over the charging station | positions: middle
+      //0 Mid Basic: cone ground outtake, balance onto driverstation | positions: middle
       new PPRobotPath("Mid Basic", drivetrain, false, eventMap).getPathCommand(true, true),
-      //nobody nose
-      new PPRobotPath("Side Basic", drivetrain, false, eventMap).getPathCommand(true, true),
-      //Place Cone: place cone ?? behind us | positions: everywhere
+      //1 Place Cone: place mid cone behind us | positions: everywhere
       new PPRobotPath("Place Cone", drivetrain, false, eventMap).getPathCommand(true, true),
-      //Side Basic combined: place object low behind, go over to center and grab ??? peice, then come back and ???
+      //2 Side Basic combined: place high cube behind, go over to center and grab cube, then come back and place (usually not enough time to place)
       new PPRobotPath(PathPlanner.loadPathGroup("Side Basic 1", drivetrain.getMaxSpeedMps(), 1, false), drivetrain, eventMap)
       .getPathCommand(true, true).andThen(
         new PPRobotPath("Side Basic 2", drivetrain, false, eventMap).getPathCommand(false, true)
       ),
-      //No clue, goes to charging station and ???? (??balances??)
+      //3 spit cone, drives over chare station, then drives back to balance (doesn't work, too much time)
       new SequentialCommandGroup(
         new PPRobotPath("Mid Basic 5-1", drivetrain, false, eventMap).getPathCommand(true, true),
         new ProxyCommand(new RotateToFieldRelativeAngle(new Rotation2d(Units.degreesToRadians(drivetrain.getHeadingDeg() + 180)), drivetrain)),
