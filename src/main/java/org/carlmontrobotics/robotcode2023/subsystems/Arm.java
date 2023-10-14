@@ -2,7 +2,7 @@ package org.carlmontrobotics.robotcode2023.subsystems;
 
 import static org.carlmontrobotics.robotcode2023.Constants.Arm.*;
 
-import org.carlmontrobotics.MotorConfig;
+import org.carlmontrobotics.lib199.MotorConfig;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
 import org.carlmontrobotics.robotcode2023.Constants.GoalPos;
 import org.carlmontrobotics.robotcode2023.commands.ArmTeleop;

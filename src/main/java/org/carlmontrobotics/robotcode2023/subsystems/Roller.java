@@ -6,7 +6,7 @@ package org.carlmontrobotics.robotcode2023.subsystems;
 
 import java.awt.Color;
 
-import org.carlmontrobotics.MotorConfig;
+import org.carlmontrobotics.lib199.MotorConfig;
 import org.carlmontrobotics.lib199.MotorControllerFactory;
 import static org.carlmontrobotics.robotcode2023.Constants.Roller.*;
 
