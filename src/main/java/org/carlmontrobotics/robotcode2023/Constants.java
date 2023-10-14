@@ -182,7 +182,7 @@ public final class Constants {
         // PID
         // Arm, Wrist
         public static double[] kP = {4.2736, 4.8804}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
-        public static double[] kI = {0.1, 0}; // (V / (rad * s) )
+        public static double[] kI = {0, 0}; // (V / (rad * s) )
         public static double[] kD = {0.1, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
 
         // Arm, Wrist
@@ -241,7 +241,7 @@ public final class Constants {
         public static final boolean[] encoderInverted = { true, true };
         public static final double rotationToRad = 2 * Math.PI;
 
-        public static final int armMotorPort = 17;
+        public static final int armMotorPort = 2;
         public static final int wristMotorPort = 19;
 
         //#endregion

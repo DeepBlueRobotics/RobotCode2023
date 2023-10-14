@@ -112,7 +112,10 @@
         "x": 1.6192012415153803,
         "y": 0.94
       },
-      "nextControl": null,
+      "nextControl": {
+        "x": 2.3007987584846195,
+        "y": 0.94
+      },
       "holonomicAngle": 0,
       "isReversal": false,
       "velOverride": null,
@@ -122,6 +125,28 @@
         "names": [
           "Store Arm"
         ],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.9145106861642298,
+        "y": 1.073605718640009
+      },
+      "prevControl": {
+        "x": 2.1076547223244244,
+        "y": 1.0068028593200045
+      },
+      "nextControl": null,
+      "holonomicAngle": 0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
         "executionBehavior": "parallel",
         "waitBehavior": "none",
         "waitTime": 0
