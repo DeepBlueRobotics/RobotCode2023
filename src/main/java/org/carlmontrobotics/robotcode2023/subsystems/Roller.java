@@ -118,5 +118,31 @@ public class Roller extends SubsystemBase {
     public double getPosition() {
         return motor.getEncoder().getPosition();
     }
+		
+    public static class RollerMode {
+        public static RollerMode INTAKE_CONE = new RollerMode(-0.5, .5, GameObject.CONE, conePickupColor);
+        public static RollerMode INTAKE_CUBE = new RollerMode(0.4, .25, GameObject.CUBE, cubePickupColor);
+        // The obj indicates which game object the roller is trying to intake
+        // if obj == NONE, that means it is trying to outtake rather than intake
+        public static RollerMode OUTTAKE_CONE = new RollerMode(0.5, .5, GameObject.NONE, defaultColor);
+        public static RollerMode OUTTAKE_CUBE = new RollerMode(-0.5, .5, GameObject.NONE, defaultColor);
+        public static RollerMode STOP = new RollerMode(0, .1, GameObject.NONE, defaultColor);
+        public double speed;
+        public double time;
+        public GameObject obj;
+        public Color ledColor;
 
+        /**
+         * @param speed  A number between -1 and 1
+         * @param time   Amount of time in seconds to keep the motor running after
+         *               distance sensor has detected an object
+         * @param intake Whether the roller is outtaking or intaking
+         */
+        public RollerMode(double speed, double time, GameObject obj, Color ledColor) {
+                this.speed = speed;
+                this.time = time;
+                this.obj = obj;
+                this.ledColor = ledColor;
+        }
+    }
 }

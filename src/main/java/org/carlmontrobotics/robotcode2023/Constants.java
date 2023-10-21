@@ -17,107 +17,117 @@ import edu.wpi.first.wpilibj.XboxController.Axis;
 import edu.wpi.first.wpilibj.XboxController.Button;
 
 /**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants. This class should not be used for any other purpose. All constants should be declared
+ * The Constants class provides a convenient place for teams to hold robot-wide
+ * numerical or boolean
+ * constants. This class should not be used for any other purpose. All constants
+ * should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes)
+ * wherever the
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
 
-    public static final double g = 9.81; //meters per second squared
+    public static final double g = 9.81; // meters per second squared
 
     public static final class Drivetrain {
 
-        //#region Subsystem Constants
+        // #region Subsystem Constants
 
         public static final double wheelBase = Units.inchesToMeters(19.75);
         public static final double trackWidth = Units.inchesToMeters(28.75);
-        // "swerveRadius" is the distance from the center of the robot to one of the modules
+        // "swerveRadius" is the distance from the center of the robot to one of the
+        // modules
         public static final double swerveRadius = Math.sqrt(Math.pow(wheelBase / 2, 2) + Math.pow(trackWidth / 2, 2));
         // The gearing reduction from the drive motor controller to the wheels
         // Gearing for the Swerve Modules is 6.75 : 1
         public static final double driveGearing = 6.75;
 
         public static final double driveModifier = 1;
-        public static final double wheelDiameterMeters = Units.inchesToMeters(4.0) * 7.36/7.65 /* empirical correction */;
-        public static final double mu = 0.5; /* 70/83.2;  */
+        public static final double wheelDiameterMeters = Units.inchesToMeters(4.0) * 7.36 / 7.65 /*
+                                                                                                  * empirical correction
+                                                                                                  */;
+        public static final double mu = 0.5; /* 70/83.2; */
 
-        public static final double NEOFreeSpeed = 5676 * (2 * Math.PI) / 60;    // radians/s
+        public static final double NEOFreeSpeed = 5676 * (2 * Math.PI) / 60; // radians/s
         // Angular speed to translational speed --> v = omega * r / gearing
         public static final double maxSpeed = NEOFreeSpeed * (wheelDiameterMeters / 2.0) / driveGearing;
         public static final double maxForward = maxSpeed;
         public static final double maxStrafe = maxSpeed;
-       // seconds it takes to go from 0 to 12 volts(aka MAX)
+        // seconds it takes to go from 0 to 12 volts(aka MAX)
         public static final double secsPer12Volts = 0.1;
 
-
-
-
         // maxRCW is the angular velocity of the robot.
-        // Calculated by looking at one of the motors and treating it as a point mass moving around in a circle.
-        // Tangential speed of this point mass is maxSpeed and the radius of the circle is sqrt((wheelBase/2)^2 + (trackWidth/2)^2)
+        // Calculated by looking at one of the motors and treating it as a point mass
+        // moving around in a circle.
+        // Tangential speed of this point mass is maxSpeed and the radius of the circle
+        // is sqrt((wheelBase/2)^2 + (trackWidth/2)^2)
         // Angular velocity = Tangential speed / radius
         public static final double maxRCW = maxSpeed / swerveRadius;
 
-        public static final boolean[] reversed = {false, false, false, false};
+        public static final boolean[] reversed = { false, false, false, false };
         // public static final boolean[] reversed = {true, true, true, true};
         // Determine correct turnZero constants (FL, FR, BL, BR)
-        public static final double[] turnZero = RobotBase.isSimulation() ?
-            new double[] {0, 0, 0, 0} :
-            new double[] {85.7812, 85.0782 , -96.9433, -162.9492};
+        public static final double[] turnZero = RobotBase.isSimulation() ? new double[] { 0, 0, 0, 0 }
+                : new double[] { 85.7812, 85.0782, -96.9433, -162.9492 };
 
-        // kP, kI, and kD constants for turn motor controllers in the order of front-left, front-right, back-left, back-right.
+        // kP, kI, and kD constants for turn motor controllers in the order of
+        // front-left, front-right, back-left, back-right.
         // Determine correct turn PID constants
-        public static final double[] turnkP = {0.00374, 0.00374, 0.00374, 0.00374};
-        public static final double[] turnkI = {0, 0, 0, 0};
-        public static final double[] turnkD = {0, 0, 0, 0};
-        public static final double[] turnkS = {0.2, 0.2, 0.2, 0.2};
+        public static final double[] turnkP = { 0.00374, 0.00374, 0.00374, 0.00374 };
+        public static final double[] turnkI = { 0, 0, 0, 0 };
+        public static final double[] turnkD = { 0, 0, 0, 0 };
+        public static final double[] turnkS = { 0.2, 0.2, 0.2, 0.2 };
         // V = kS + kV * v + kA * a
         // 12 = 0.2 + 0.00463 * v
         // v = (12 - 0.2) / 0.00463 = 2548.596 degrees/s
-        public static final double[] turnkV = {0.00463, 0.00463, 0.00463, 0.00463};
-        public static final double[] turnkA = {0.000115, 0.000115, 0.000115, 0.000115};
+        public static final double[] turnkV = { 0.00463, 0.00463, 0.00463, 0.00463 };
+        public static final double[] turnkA = { 0.000115, 0.000115, 0.000115, 0.000115 };
 
         // kP is an average of the forward and backward kP values
         // Forward: 1.72, 1.71, 1.92, 1.94
         // Backward: 1.92, 1.92, 2.11, 1.89
-        public static final double[] drivekP = {1.82, 1.815, 2.015, 1.915};
-        public static final double[] drivekI = {0, 0, 0, 0};
-        public static final double[] drivekD = {0, 0, 0, 0};
-        public static final boolean[] driveInversion = {false, false, false, false};
-        public static final boolean[] turnInversion = {true, true, true, true};
+        public static final double[] drivekP = { 1.82, 1.815, 2.015, 1.915 };
+        public static final double[] drivekI = { 0, 0, 0, 0 };
+        public static final double[] drivekD = { 0, 0, 0, 0 };
+        public static final boolean[] driveInversion = { false, false, false, false };
+        public static final boolean[] turnInversion = { true, true, true, true };
 
-        public static final double[] kForwardVolts = {0.129, 0.108, 0.14, 0.125};
-        public static final double[] kBackwardVolts = {0.115, 0.169, 0.13, 0.148};
+        public static final double[] kForwardVolts = { 0.129, 0.108, 0.14, 0.125 };
+        public static final double[] kBackwardVolts = { 0.115, 0.169, 0.13, 0.148 };
 
-        public static final double[] kForwardVels = {2.910/1.1, 2.970/1.1, 2.890/1.1, 2.930/1.1};
-        public static final double[] kBackwardVels = {2.890/1.1, 2.800/1.1, 2.850/1.1, 2.820/1.1};
-        public static final double[] kForwardAccels = {0.145, 0.149, 0.192, 0.198};
-        public static final double[] kBackwardAccels = {0.192, 0.187, 0.264, 0.176};
+        public static final double[] kForwardVels = { 2.910 / 1.1, 2.970 / 1.1, 2.890 / 1.1, 2.930 / 1.1 };
+        public static final double[] kBackwardVels = { 2.890 / 1.1, 2.800 / 1.1, 2.850 / 1.1, 2.820 / 1.1 };
+        public static final double[] kForwardAccels = { 0.145, 0.149, 0.192, 0.198 };
+        public static final double[] kBackwardAccels = { 0.192, 0.187, 0.264, 0.176 };
 
-        public static final double autoMaxSpeedMps = 0.35 * 4.4;  // Meters / second
-        public static final double autoMaxAccelMps2 = mu * g;  // Meters / seconds^2
-        public static final double autoMaxVolt = 10.0;   // For Drivetrain voltage constraint in RobotPath.java
-        // The maximum acceleration the robot can achieve is equal to the coefficient of static friction times the gravitational acceleration
+        public static final double autoMaxSpeedMps = 0.35 * 4.4; // Meters / second
+        public static final double autoMaxAccelMps2 = mu * g; // Meters / seconds^2
+        public static final double autoMaxVolt = 10.0; // For Drivetrain voltage constraint in RobotPath.java
+        // The maximum acceleration the robot can achieve is equal to the coefficient of
+        // static friction times the gravitational acceleration
         // a = mu * 9.8 m/s^2
         public static final double autoCentripetalAccel = mu * g * 2;
 
         public static final boolean isGyroReversed = true;
 
         // PID values are listed in the order kP, kI, and kD
-        public static final double[] xPIDController = {4, 0.0, 0.0};
-        public static final double[] yPIDController = {4, 0.0, 0.0};
-        public static final double[] thetaPIDController = {0.10, 0.0, 0.001};
+        public static final double[] xPIDController = { 4, 0.0, 0.0 };
+        public static final double[] yPIDController = { 4, 0.0, 0.0 };
+        public static final double[] thetaPIDController = { 0.10, 0.0, 0.001 };
 
-        public static final SwerveConfig swerveConfig = new SwerveConfig(wheelDiameterMeters, driveGearing, mu, autoCentripetalAccel, kForwardVolts, kForwardVels, kForwardAccels, kBackwardVolts, kBackwardVels, kBackwardAccels, drivekP, drivekI, drivekD, turnkP, turnkI, turnkD, turnkS, turnkV, turnkA, turnZero, driveInversion, reversed, driveModifier, turnInversion);
+        public static final SwerveConfig swerveConfig = new SwerveConfig(wheelDiameterMeters, driveGearing, mu,
+                autoCentripetalAccel, kForwardVolts, kForwardVels, kForwardAccels, kBackwardVolts, kBackwardVels,
+                kBackwardAccels, drivekP, drivekI, drivekD, turnkP, turnkI, turnkD, turnkS, turnkV, turnkA, turnZero,
+                driveInversion, reversed, driveModifier, turnInversion);
 
         public static final Limelight.Transform limelightTransformForPoseEstimation = Transform.BOTPOSE_WPIBLUE;
 
-        //#endregion
+        // #endregion
 
-        //#region Ports
+        // #region Ports
 
         public static final int driveFrontLeftPort = 8;
         public static final int driveFrontRightPort = 13;
@@ -134,32 +144,40 @@ public final class Constants {
         public static final int canCoderPortBL = 3;
         public static final int canCoderPortBR = 4;
 
-        //#endregion
+        // #endregion
 
-        //#region Command Constants
+        // #region Command Constants
 
         public static final double kNormalDriveSpeed = 1; // Percent Multiplier
         public static final double kNormalDriveRotation = 0.5; // Percent Multiplier
         public static final double kSlowDriveSpeed = 0.4; // Percent Multiplier
         public static final double kSlowDriveRotation = 0.250; // Percent Multiplier
-        public static final double kAlignMultiplier = 1D/3D;
+        public static final double kBabyDriveSpeed = 0.3; // Percent Multiplier
+        public static final double kBabyTurnSpeed = 0.2; // Percent Multiplier
+        public static final double kAlignMultiplier = 1D / 3D;
         public static final double kAlignForward = 0.6;
 
         public static final double chargeStationAlignToleranceDeg = 2.5;
         public static final double chargeStationAlignSpeedMpSPerDeg = 0.3 / 20;
         public static final double chargeStationAlignTime = 500;
         public static final double chargeStationAlignFFMpS = 0;
-        public static final double wheelTurnDriveSpeed = 0.0001; // Meters / Second ; A non-zero speed just used to orient the wheels to the correct angle. This should be very small to avoid actually moving the robot.
+        public static final double wheelTurnDriveSpeed = 0.0001; // Meters / Second ; A non-zero speed just used to
+                                                                 // orient the wheels to the correct angle. This should
+                                                                 // be very small to avoid actually moving the robot.
 
-        public static final double[] positionTolerance = {Units.inchesToMeters(.5), Units.inchesToMeters(.5), 5}; // Meters, Meters, Degrees
-        public static final double[] velocityTolerance = {Units.inchesToMeters(1), Units.inchesToMeters(1), 5}; // Meters, Meters, Degrees/Second
+        public static final double[] positionTolerance = { Units.inchesToMeters(.5), Units.inchesToMeters(.5), 5 }; // Meters,
+                                                                                                                    // Meters,
+                                                                                                                    // Degrees
+        public static final double[] velocityTolerance = { Units.inchesToMeters(1), Units.inchesToMeters(1), 5 }; // Meters,
+                                                                                                                  // Meters,
+                                                                                                                  // Degrees/Second
 
-        //#endregion
+        // #endregion
     }
 
     public static final class Arm {
 
-        //#region Subsystem Constants
+        // #region Subsystem Constants
 
         // Array Indexes (Just to make things easier to read)
         public static final int ARM = 0;
@@ -171,23 +189,25 @@ public final class Constants {
 
         // Feedforward
         // Arm, Wrist
-        public static final double[] kS = {0.20642, .084199};
-        public static final double[] kG = {0.6697, 0.34116};
-        public static final double[] kV = {4.3735, 2.008};
-        public static final double[] kA = {0.24914, 0.041502};
+        public static final double[] kS = { 0.20642, .084199 };
+        public static final double[] kG = { 0.6697, 0.34116 };
+        public static final double[] kV = { 4.3735, 2.008 };
+        public static final double[] kA = { 0.24914, 0.041502 };
         public static final double kG_WRIST = 0.34116; // (V)
 
         // PID
         // Arm, Wrist
-        public static double[] kP = {4.2736, 4.8804}; // 4.2736 for arm from sysid was tested and it worked fine (V / rad)
-        public static double[] kI = {0, 0}; // (V / (rad * s) )
-        public static double[] kD = {0.1, 0.90262}; // 0 for arm from sysid was tested and it worked fine (V / (rad / s) )
+        public static double[] kP = { 4.2736, 4.8804 }; // 4.2736 for arm from sysid was tested and it worked fine (V /
+                                                        // rad)
+        public static double[] kI = { 0, 0 }; // (V / (rad * s) )
+        public static double[] kD = { 0.1, 0.90262 }; // 0 for arm from sysid was tested and it worked fine (V / (rad /
+                                                      // s) )
 
         // Arm, Wrist
         public static double[] posToleranceRad = { .07, .07 }; // rad
         public static double[] velToleranceRadPSec = { 1, 1 }; // rad/s
 
-        public static double[] offsetRad = { 0.865, 2.93 + Math.PI / 2 }; // rad
+        public static double[] offsetRad = { 3.237, 4.501 }; // rad
         public static final double rumbleFullPower = 1;
         public static final double rumbleNoPower = 0;
 
@@ -195,7 +215,7 @@ public final class Constants {
         public static final double ARM_MASS_KG = Units.lbsToKilograms(6.841);
         public static final double ARM_LENGTH_METERS = Units.inchesToMeters(38.25);
 
-        // Distance from the arm motor to the center of mass of the  arm
+        // Distance from the arm motor to the center of mass of the arm
         public static final double COM_ARM_LENGTH_METERS = Units.inchesToMeters(14.23);
         public static final double ROLLER_MASS_KG = Units.lbsToKilograms(15);
 
@@ -212,36 +232,42 @@ public final class Constants {
         public static final double DT_EXTENSION_FOR_ROLLER = Units.inchesToMeters(14);
 
         // TODO: Replace these values with Design's actual values
-        public static final double MARGIN_OF_ERROR = Math.PI/18;
+        public static final double MARGIN_OF_ERROR = Math.PI / 18;
         public static final double ARM_LOWER_LIMIT_RAD = -3.569 + MARGIN_OF_ERROR;
         public static final double ARM_UPPER_LIMIT_RAD = .36 - MARGIN_OF_ERROR;
         public static final double ARM_DISCONTINUITY_RAD = (ARM_LOWER_LIMIT_RAD + ARM_UPPER_LIMIT_RAD) / 2 - Math.PI;
         public static final double WRIST_LOWER_LIMIT_RAD = -2.933 + MARGIN_OF_ERROR;
         public static final double WRIST_UPPER_LIMIT_RAD = 2.605 - MARGIN_OF_ERROR;
-        public static final double WRIST_DISCONTINUITY_RAD = (WRIST_LOWER_LIMIT_RAD + WRIST_UPPER_LIMIT_RAD) / 2 - Math.PI;
+        public static final double WRIST_DISCONTINUITY_RAD = (WRIST_LOWER_LIMIT_RAD + WRIST_UPPER_LIMIT_RAD) / 2
+                - Math.PI;
 
         // TODO: Determine actual max vel/accel
         // public static double[] MAX_FF_VEL = {.25, .25}; // rad / s
-        public static double[] MAX_FF_VEL_MANUAL = {1, 3}; // rad / s
-        public static double[] MAX_FF_VEL_AUTO = {1.25, 5}; // rad / s
-        public static double[] MAX_FF_ACCEL = {5, 5}; // rad / s^2
-        public static TrapezoidProfile.Constraints armConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL_AUTO[ARM], MAX_FF_ACCEL[ARM]);
-        public static TrapezoidProfile.Constraints wristConstraints = new TrapezoidProfile.Constraints(MAX_FF_VEL_AUTO[WRIST], MAX_FF_ACCEL[WRIST]);
+        // Arm, Wrist
+        public static double[] MAX_FF_VEL_BABY = { 0.675, 0.7 };
+        public static double[] MAX_FF_ACCEL_BABY = { 4, 4 };
+        public static double[] MAX_FF_VEL_MANUAL = { 1, 3 }; // rad / s
+        public static double[] MAX_FF_VEL_AUTO = { 1.25, 5 }; // rad / s
+        public static double[] MAX_FF_ACCEL = { 5, 5 }; // rad / s^2
+        public static TrapezoidProfile.Constraints armConstraints = new TrapezoidProfile.Constraints(
+                MAX_FF_VEL_AUTO[ARM], MAX_FF_ACCEL[ARM]);
+        public static TrapezoidProfile.Constraints wristConstraints = new TrapezoidProfile.Constraints(
+                MAX_FF_VEL_AUTO[WRIST], MAX_FF_ACCEL[WRIST]);
 
-        //#endregion
+        // #endregion
 
-        //#region Ports
+        // #region Ports
 
         public static final boolean[] motorInverted = { true, false };
-        public static final boolean[] encoderInverted = { false, true };
+        public static final boolean[] encoderInverted = { true, true };
         public static final double rotationToRad = 2 * Math.PI;
 
         public static final int armMotorPort = 17;
         public static final int wristMotorPort = 19;
 
-        //#endregion
+        // #endregion
 
-        //#region Command Constants
+        // #region Command Constants
 
         public static final double WRIST_STOW_POS_RAD = WRIST_UPPER_LIMIT_RAD;
         public static final double WRIST_NEG_STOW_POS_RAD = WRIST_LOWER_LIMIT_RAD;
@@ -250,14 +276,16 @@ public final class Constants {
         public static final int WRIST_CURRENT_LIMIT_AMP = 15;
         public static final double ROLLER_COM_CORRECTION_RAD = Units.degreesToRadians(18.3);
         public static double ARM_TELEOP_MAX_GOAL_DIFF_FROM_CURRENT_RAD = .5;
+        // if the encoder has been disconnected for DISCONNECTED_ENCODER_TIMEOUT, shut off the motor
+        public static final double DISCONNECTED_ENCODER_TIMEOUT_SEC = .25;
 
-        //#endregion
+        // #endregion
 
     }
 
     public static final class GoalPos {
 
-        //#region Goal Positions
+        // #region Goal Positions
         // if intake/outtake on back, the "negative" pos will be used
         // 0 = "Front", 1 = "Back" (i.e. front refers to the side with the battery)
         // 0 = CUBE, 1 = CONE
@@ -265,75 +293,75 @@ public final class Constants {
 
         // TODO : Get angles for front
         public static GoalPos[][] LOW = {
-            { // front
-                new GoalPos(-1.507131, 2.327210), // cube
-                new GoalPos(-1.437940, 2.123031)             // cone
-            },
-            { // back
-                new GoalPos(-2.387175, 1.494942),
-                new GoalPos(-1.657286, -2.410204)
-            }
+                { // front
+                        new GoalPos(-1.507131, 2.327210), // cube
+                        new GoalPos(-1.437940, 2.123031) // cone
+                },
+                { // back
+                        new GoalPos(-2.387175, 1.494942),
+                        new GoalPos(-1.657286, -2.410204)
+                }
         };
         public static GoalPos[][] MID = {
-            {
-                new GoalPos(-0.596292, 1.513329),
-                new GoalPos(0.208573, -1.690364)
-            },
-            {
-                new GoalPos(-3.055642, 1.916546),
-                new GoalPos(-3.417581, 1.683445)
-            }
+                {
+                        new GoalPos(-0.596292, 1.513329),
+                        new GoalPos(0.208573, -1.690364)
+                },
+                {
+                        new GoalPos(-3.055642, 1.916546),
+                        new GoalPos(-3.417581, 1.683445)
+                }
         };
         public static GoalPos[][] HIGH = {
-            {
-                new GoalPos(-0.156905, 0.901323),
-                new GoalPos(0.205366, -0.769676)
-            },
-            {
-                new GoalPos(-3.415958, 1.700500),
-                new GoalPos(-3.414373, 0.667)
-            }
+                {
+                        new GoalPos(-0.156905, 0.901323),
+                        new GoalPos(0.205366, -0.769676)
+                },
+                {
+                        new GoalPos(-3.415958, 1.700500),
+                        new GoalPos(-3.414373, 0.667)
+                }
         };
         // TODO: Get positions for STORED, SHELF, and SUBSTATION
         public static GoalPos[][] STORED = {
-            {
-                new GoalPos(-1.559094, 2.424171),
-                new GoalPos(-1.559094, 2.424171)
-            },
-            {
-                new GoalPos(-1.559094, 2.424171),
-                new GoalPos(-1.559094, 2.424171)
-            }
+                {
+                        new GoalPos(-1.559094, 2.424171),
+                        new GoalPos(-1.559094, 2.424171)
+                },
+                {
+                        new GoalPos(-1.559094, 2.424171),
+                        new GoalPos(-1.559094, 2.424171)
+                }
         };
         public static GoalPos[][] SHELF = {
-            {
-                new GoalPos(0.224062, -0.800449),
-                new GoalPos(0.224062, -0.800449)
-            },
-            {
-                new GoalPos(0.224062, -0.800449),
-                new GoalPos(0.224062, -0.800449)
-            }
+                {
+                        new GoalPos(0.224062, -0.800449),
+                        new GoalPos(0.224062, -0.800449)
+                },
+                {
+                        new GoalPos(0.224062, -0.800449),
+                        new GoalPos(0.224062, -0.800449)
+                }
         };
         public static GoalPos[][] SUBSTATION = {
-            {
-                new GoalPos(-1.459526, 2.417944),
-                new GoalPos(-1.459526, 2.417944)
-            },
-            {
-                new GoalPos(-1.459526, 2.417944),
-                new GoalPos(-1.459526, 2.417944)
-            }
+                {
+                        new GoalPos(-1.459526, 2.417944),
+                        new GoalPos(-1.459526, 2.417944)
+                },
+                {
+                        new GoalPos(-1.459526, 2.417944),
+                        new GoalPos(-1.459526, 2.417944)
+                }
         };
         public static GoalPos[][] INTAKE = {
-            {
-                new GoalPos(-1.29, 1.32),
-                new GoalPos(-1.208155, 0.646987)
-            },
-            {
-                new GoalPos(-1.271106, 1.303141),
-                new GoalPos(-1.208155, 0.646987)
-            }
+                {
+                        new GoalPos(-1.29, 1.32),
+                        new GoalPos(-1.208155, 0.646987)
+                },
+                {
+                        new GoalPos(-1.271106, 1.303141),
+                        new GoalPos(-1.208155, 0.646987)
+                }
         };
         public double armPos, wristPos;
 
@@ -341,16 +369,17 @@ public final class Constants {
             this.armPos = armPos;
             this.wristPos = wristPos;
         }
-        //#endregion
+        // #endregion
 
     }
 
     public static final class Roller {
 
-        //#region Subsystem Constants
+        // #region Subsystem Constants
 
         public static final int ledLength = 85;
-        public static final double ledDefaultColorRestoreTime = 3; // The time in seconds after picking up a game piece to restore the LED color to defaultColor
+        public static final double ledDefaultColorRestoreTime = 3; // The time in seconds after picking up a game piece
+                                                                   // to restore the LED color to defaultColor
         public static final Color defaultColor = new Color(0, 0, 200);
         public static final Color pickupSuccessColor = new Color(0, 200, 0);
         public static final Color conePickupColor = new Color(150, 150, 0);
@@ -364,44 +393,18 @@ public final class Constants {
 
         public static final int ROLLER_MAX_CURRENT_AMPS = 20;
 
-        //#endregion
+        // #endregion
 
-        //#region Ports
+        // #region Ports
 
         public static final int rollerPort = 18;
         public static final int ledPort = 0;
 
-        //#endregion
+        // #endregion
 
-        //#region Command Constants
-        // TODO: Determine actual speeds/timings for roller
-        public static class RollerMode {
-            public static RollerMode INTAKE_CONE = new RollerMode(-0.5, .5, GameObject.CONE, conePickupColor);
-            public static RollerMode INTAKE_CUBE = new RollerMode(0.4, .25, GameObject.CUBE, cubePickupColor);
-            // The obj indicates which game object the roller is trying to intake
-            // if obj == NONE, that means it is trying to outtake rather than intake
-            public static RollerMode OUTTAKE_CONE = new RollerMode(0.5, .5, GameObject.NONE, defaultColor);
-            public static RollerMode OUTTAKE_CUBE = new RollerMode(-0.5, .5, GameObject.NONE, defaultColor);
-            public static RollerMode STOP = new RollerMode(0, .1, GameObject.NONE, defaultColor);
-            public double speed, time;
-            public GameObject obj;
-            public Color ledColor;
+        // #region Command Constants
 
-            /**
-             * @param speed  A number between -1 and 1
-             * @param time   Amount of time in seconds to keep the motor running after
-             *               distance sensor has detected an object
-             * @param intake Whether the roller is outtaking or intaking
-             */
-            public RollerMode(double speed, double time, GameObject obj, Color ledColor) {
-                this.speed = speed;
-                this.time = time;
-                this.obj = obj;
-                this.ledColor = ledColor;
-            }
-        }
-
-        //#endregion
+        // #endregion
 
         public static enum GameObject {
             CUBE, CONE, NONE

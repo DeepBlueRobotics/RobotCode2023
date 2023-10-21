@@ -12,6 +12,7 @@ import org.carlmontrobotics.lib199.sim.MockedSparkEncoder;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
@@ -24,8 +25,11 @@ public class Robot extends TimedRobot {
     robot = this;
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
-    if(!DriverStation.isFMSAttached()) PathPlannerServer.startServer(5811);
+    if (!DriverStation.isFMSAttached())
+      PathPlannerServer.startServer(5811);
     robotContainer = new RobotContainer();
+
+    SmartDashboard.putBoolean("safeMode", false);
   }
 
   @Override
@@ -40,8 +44,13 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     MotorErrors.printSparkMaxErrorMessages();
-  }
 
+    if (SmartDashboard.getBoolean("safeMode", false)) {
+      RobotContainer.driverMode = RobotContainer.DriverMode.BABY;
+    } else if (!RobotContainer.driverMode.isSlow()) {
+      RobotContainer.driverMode = RobotContainer.DriverMode.NORM;
+    }
+  }
 
   @Override
   public void disabledInit() {
@@ -58,10 +67,12 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+  }
 
   @Override
-  public void disabledExit() {}
+  public void disabledExit() {
+  }
 
   @Override
   public void autonomousInit() {
@@ -71,10 +82,12 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+  }
 
   @Override
-  public void autonomousExit() {}
+  public void autonomousExit() {
+  }
 
   @Override
   public void teleopInit() {
@@ -83,10 +96,12 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+  }
 
   @Override
-  public void teleopExit() {}
+  public void teleopExit() {
+  }
 
   @Override
   public void testInit() {
@@ -95,8 +110,10 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
 
   @Override
-  public void testExit() {}
+  public void testExit() {
+  }
 }

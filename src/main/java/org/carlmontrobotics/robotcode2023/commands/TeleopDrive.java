@@ -8,9 +8,10 @@
 package org.carlmontrobotics.robotcode2023.commands;
 
 import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.*;
+import org.carlmontrobotics.robotcode2023.RobotContainer.DriverMode;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import org.carlmontrobotics.robotcode2023.Constants;
 import org.carlmontrobotics.robotcode2023.Robot;
@@ -27,19 +28,19 @@ public class TeleopDrive extends CommandBase {
   private DoubleSupplier fwd;
   private DoubleSupplier str;
   private DoubleSupplier rcw;
-  private BooleanSupplier slow;
+  private Supplier mode;
   private double currentForwardVel = 0;
   private double currentStrafeVel = 0;
 
   /**
    * Creates a new TeleopDrive.
    */
-  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, BooleanSupplier slow) {
+  public TeleopDrive(Drivetrain drivetrain, DoubleSupplier fwd, DoubleSupplier str, DoubleSupplier rcw, Supplier mode) {
     addRequirements(this.drivetrain = drivetrain);
     this.fwd = fwd;
     this.str = str;
     this.rcw = rcw;
-    this.slow = slow;
+    this.mode = mode;
   }
 
   // Called when the command is initially scheduled.
@@ -55,20 +56,30 @@ public class TeleopDrive extends CommandBase {
   }
 
   public double[] getRequestedSpeeds() {
-    // Sets all values less than or equal to a very small value (determined by the idle joystick state) to zero.
-    // Used to make sure that the robot does not try to change its angle unless it is moving,
+    // Sets all values less than or equal to a very small value (determined by the
+    // idle joystick state) to zero.
+    // Used to make sure that the robot does not try to change its angle unless it
+    // is moving,
     double forward = fwd.getAsDouble();
     double strafe = str.getAsDouble();
     double rotateClockwise = rcw.getAsDouble();
-    if (Math.abs(forward) <= Constants.OI.JOY_THRESH) forward = 0.0;
-    else forward *= maxForward;
-    if (Math.abs(strafe) <= Constants.OI.JOY_THRESH) strafe = 0.0;
-    else strafe *= maxStrafe;
-    if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH) rotateClockwise = 0.0;
-    else rotateClockwise *= maxRCW;
+    if (Math.abs(forward) <= Constants.OI.JOY_THRESH)
+      forward = 0.0;
+    else
+      forward *= maxForward;
+    if (Math.abs(strafe) <= Constants.OI.JOY_THRESH)
+      strafe = 0.0;
+    else
+      strafe *= maxStrafe;
+    if (Math.abs(rotateClockwise) <= Constants.OI.JOY_THRESH)
+      rotateClockwise = 0.0;
+    else
+      rotateClockwise *= maxRCW;
 
-    double driveMultiplier = slow.getAsBoolean() ? kSlowDriveSpeed : kNormalDriveSpeed;
-    double rotationMultiplier = slow.getAsBoolean() ? kSlowDriveRotation : kNormalDriveRotation;
+    double driveMultiplier = ((DriverMode) mode.get()).isBaby() ? kBabyDriveSpeed
+        : (((DriverMode) mode.get()).isSlow() ? kSlowDriveSpeed : kNormalDriveSpeed);
+    double rotationMultiplier = ((DriverMode) mode.get()).isBaby() ? kBabyTurnSpeed
+        : (((DriverMode) mode.get()).isSlow() ? kSlowDriveRotation : kNormalDriveRotation);
 
     forward *= driveMultiplier;
     strafe *= driveMultiplier;
@@ -78,8 +89,9 @@ public class TeleopDrive extends CommandBase {
     double accelerationX = (forward - currentForwardVel) / robotPeriod;
     double accelerationY = (strafe - currentStrafeVel) / robotPeriod;
     double translationalAcceleration = Math.hypot(accelerationX, accelerationY);
-    if(translationalAcceleration > autoMaxAccelMps2) {
-      Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2, Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
+    if (translationalAcceleration > autoMaxAccelMps2) {
+      Translation2d limitedAccelerationVector = new Translation2d(autoMaxAccelMps2,
+          Rotation2d.fromRadians(Math.atan2(accelerationY, accelerationX)));
       Translation2d limitedVelocityVector = limitedAccelerationVector.times(robotPeriod);
       currentForwardVel += limitedVelocityVector.getX();
       currentStrafeVel += limitedVelocityVector.getY();
@@ -90,13 +102,16 @@ public class TeleopDrive extends CommandBase {
 
     // ATM, there is no rotational acceleration limit
 
-    // If the above math works, no velocity should be greater than the max velocity, so we don't need to limit it.
+    // If the above math works, no velocity should be greater than the max velocity,
+    // so we don't need to limit it.
 
-    return new double[] {currentForwardVel, currentStrafeVel, -rotateClockwise};
+    return new double[] { currentForwardVel, currentStrafeVel, -rotateClockwise };
   }
 
   public boolean hasDriverInput() {
-    return Math.abs(fwd.getAsDouble()) > Constants.OI.JOY_THRESH || Math.abs(str.getAsDouble()) > Constants.OI.JOY_THRESH || Math.abs(rcw.getAsDouble()) > Constants.OI.JOY_THRESH;
+    return Math.abs(fwd.getAsDouble()) > Constants.OI.JOY_THRESH
+        || Math.abs(str.getAsDouble()) > Constants.OI.JOY_THRESH
+        || Math.abs(rcw.getAsDouble()) > Constants.OI.JOY_THRESH;
   }
 
   // Called once the command ends or is interrupted.
