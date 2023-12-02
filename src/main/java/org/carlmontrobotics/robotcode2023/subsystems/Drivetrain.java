@@ -5,7 +5,7 @@ import static org.carlmontrobotics.robotcode2023.Constants.Drivetrain.*;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-import org.carlmontrobotics.MotorConfig;
+import org.carlmontrobotics.MotorConfig; 
 import com.kauailabs.navx.frc.AHRS;
 
 import org.carlmontrobotics.lib199.MotorControllerFactory;
